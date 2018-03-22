@@ -83,7 +83,7 @@ MAXHS_CXXFLAGS += -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS
 MAXHS_CXXFLAGS += -Wall -Wno-parentheses -Wextra -Wno-deprecated
 MAXHS_CXXFLAGS += -std=c++11
 
-MAXHS_LDFLAGS  = -Wall -lz -L$(CPLEXLIBDIR) -lcplex -lpthread
+MAXHS_LDFLAGS  = -Wall -lz -L$(CPLEXLIBDIR) -lcplex -lpthread -ldl
 
 ECHO=@echo
 
