@@ -80,7 +80,7 @@ MAXHS_SLIB = lib$(MAXHS).a#  Name of Maxhs static library.
 
 MAXHS_CXXFLAGS = -DIL_STD -I. -I$(CPLEXINCDIR)
 MAXHS_CXXFLAGS += -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS 
-MAXHS_CXXFLAGS += -Wall -Wno-parentheses -Wextra -Wno-deprecated
+MAXHS_CXXFLAGS += -Wall -Wno-parentheses -Wextra -Wno-deprecated -Wno-sign-compare
 MAXHS_CXXFLAGS += -std=c++11
 
 MAXHS_LDFLAGS  = -Wall -lz -L$(CPLEXLIBDIR) -lcplex -lpthread -ldl

@@ -1161,3 +1161,89 @@ void Solver::garbageCollect()
                ca.size()*ClauseAllocator::Unit_Size, to.size()*ClauseAllocator::Unit_Size);
     to.moveTo(ca);
 }
+
+bool Solver::clean_xor_clauses(vec<Xor>& xors)
+{
+    assert(ok);
+    #ifdef VERBOSE_DEBUG
+    cout << "(" << matrix_no << ") Cleaning gauss clauses" << endl;
+    for(Xor& x : xors) {
+        cout << "orig XOR: " << x << endl;
+    }
+    #endif
+
+    size_t i = 0;
+    size_t j = 0;
+    for(size_t size = xors.size(); i < size; i++) {
+        Xor& x = xors[i];
+        const bool keep = clean_one_xor(x);
+        if (!ok) {
+            return false;
+        }
+
+        if (keep) {
+            xors[j++] = x;
+        }
+    }
+    xors.shrink(i-j);
+
+    #ifdef VERBOSE_DEBUG
+    for(Xor& x : xors) {
+        cout << "cleaned XOR: " << x << endl;
+    }
+    #endif
+    return ok;
+}
+
+bool Solver::clean_one_xor(Xor& x)
+{
+    bool rhs = x.rhs;
+    size_t i = 0;
+    size_t j = 0;
+    for(size_t size = x.size(); i < size; i++) {
+        uint32_t var = x[i];
+        if (value(var) != l_Undef) {
+            rhs ^= value(var) == l_True;
+        } else {
+            x[j++] = var;
+        }
+    }
+    x.resize(j);
+    x.rhs = rhs;
+
+    switch(x.size()) {
+        case 0:
+            ok &= !x.rhs;
+            return false;
+
+        case 1: {
+            fully_enqueue_this(mkLit(x[0], !x.rhs));
+            return false;
+        }
+        case 2: {
+            assert(false);
+            //add_xor_clause_inter(vars_to_lits(x), x.rhs, true);
+            return false;
+        }
+        default: {
+            return true;
+        }
+    }
+}
+
+bool Solver::fully_enqueue_this(const Lit lit)
+{
+    const lbool val = value(lit);
+    if (val == l_Undef) {
+        enqueue(lit);
+        ok = propagate() == CRef_Undef;
+
+        if (!ok) {
+            return false;
+        }
+    } else if (val == l_False) {
+        ok = false;
+        return false;
+    }
+    return true;
+}

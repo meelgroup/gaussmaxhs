@@ -54,6 +54,10 @@ struct Lit {
     // Use this as a constructor:
     friend Lit mkLit(Var var, bool sign);
 
+    Lit& operator^=(const bool b) {
+        x ^= (int)b;
+        return *this;
+    }
     bool operator == (Lit p) const { return x == p.x; }
     bool operator != (Lit p) const { return x != p.x; }
     bool operator <  (Lit p) const { return x < p.x;  } // '<' makes p, ~p adjacent in the ordering.
@@ -78,6 +82,16 @@ const Lit lit_Undef = { -2 };  // }- Useful special constants.
 const Lit lit_Error = { -1 };  // }
 
 struct MkIndexLit { vec<Lit>::Size operator()(Lit l) const { return vec<Lit>::Size(l.x); } };
+
+// inline std::ostream& operator<<(std::ostream& os, const Lit lit)
+// {
+//     if (lit == lit_Undef) {
+//         os << "lit_Undef";
+//     } else {
+//         os << (sign(lit) ? "-" : "") << (var(lit) + 1);
+//     }
+//     return os;
+// }
 
 template<class T> class VMap : public IntMap<Var, T>{};
 template<class T> class LMap : public IntMap<Lit, T, MkIndexLit>{};

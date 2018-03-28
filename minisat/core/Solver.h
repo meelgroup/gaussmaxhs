@@ -27,9 +27,14 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "minisat/mtl/IntMap.h"
 #include "minisat/utils/Options.h"
 #include "minisat/core/SolverTypes.h"
+#include "minisat/core/gaussconfig.h"
+#include "minisat/core/xor.h"
 
 
 namespace Minisat {
+
+class Gaussian;
+class MatrixFinder;
 
 //=================================================================================================
 // Solver -- the main class:
@@ -37,6 +42,8 @@ namespace Minisat {
 class Solver {
 public:
 
+    friend class Gaussian;
+    friend class MatrixFinder;
     // Constructor/Destructor:
     //
     Solver();
@@ -151,6 +158,13 @@ public:
     uint64_t solves, starts, decisions, rnd_decisions, propagations, conflicts;
     uint64_t dec_vars, num_clauses, num_learnts, clauses_literals, learnts_literals, max_literals, tot_literals;
 
+    //Gauss
+    GaussConf gaussconf;
+    vector<Gaussian*> gauss_matrixes;
+    bool clean_xor_clauses(vec<Xor>& xors);
+    bool clean_one_xor(Xor& x);
+    bool fully_enqueue_this(const Lit lit);
+
 protected:
 
     // Helper structures:
@@ -189,6 +203,7 @@ protected:
     //
     vec<CRef>           clauses;          // List of problem clauses.
     vec<CRef>           learnts;          // List of learnt clauses.
+    vec<Xor>           xorclauses;       // List of learnt clauses.
     vec<Lit>            trail;            // Assignment stack; stores all assigments made in the order they were made.
     vec<int>            trail_lim;        // Separator indices for different decision levels in 'trail'.
     vec<Lit>            assumptions;      // Current set of assumptions provided to solve by the user.
