@@ -100,10 +100,18 @@ static void readClause(B& in, vector<Lit>& lits) {
 
 // JD Read clauses with weights
 template<class B>
-static void readClause(B& in, vector<Lit>& lits, Weight &outW) {
+static void readClause(B& in, vector<Lit>& lits, Weight &outW, bool& isxor) {
   bool first_time = true;
   int     parsed_lit, var;
   lits.clear();
+
+  if (*in == 'x') {
+      isxor = true;
+      ++in;
+  } else {
+      isxor = false;
+  }
+
   for (;;){
     if (first_time) {
       first_time = false;
@@ -156,7 +164,8 @@ static bool parse_DIMACS_main(B& in, Wcnf *F) {
     else{
       // JD parse the weights of clauses as well (default weight 1) 
       Weight w = 1;   
-      clausesHaveWeights ? readClause(in, lits, w) : readClause(in, lits);
+      bool is_xor = false;
+      clausesHaveWeights ? readClause(in, lits, w, is_xor) : readClause(in, lits);
       F->addDimacsClause(lits, w); 
     }
   }

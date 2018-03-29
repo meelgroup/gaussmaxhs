@@ -95,11 +95,16 @@ bool Wcnf::inputDimacs(std::string filename, bool verify) {
   return true;
 }
 
-void Wcnf::addDimacsClause(vector<Lit> &lits, Weight w) {
+void Wcnf::addDimacsClause(vector<Lit> &lits, Weight w, bool is_xor) {
   //This routine needs to know dimacs_top (so set_dimacs_params should
   //have been called first) to determine if the clause is soft or hard
+
+  if (is_xor) {
+      assert(w >= dimacs_top && "xor clauses must be hard clauses");
+      exit(-1);
+  }
   if (w >= dimacs_top)
-    addHardClause(lits);
+    addHardClause(lits, is_xor);
   else
     addSoftClause(lits, w);
 }
@@ -126,7 +131,8 @@ void Wcnf::update_maxorigvar(vector<Lit>& lits) {
       maxorigvar = maxvar = var(l);
 }
 
-void Wcnf::addHardClause(vector<Lit>& lits) {
+void Wcnf::addHardClause(vector<Lit>& lits, bool is_xor) {
+    //TODO
   update_maxorigvar(lits);
   _addHardClause(lits);
 }

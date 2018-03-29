@@ -94,14 +94,14 @@ public:
   }
 
   //input clauses
-  void addDimacsClause(vector<Lit> &lits, Weight w); //Changes input vector lits
+  void addDimacsClause(vector<Lit> &lits, Weight w, bool is_xor = false); //Changes input vector lits
   void set_dimacs_params(int nvars, int nclauses, Weight top = std::numeric_limits<Weight>::max());
   double parseTime() const { return parsing_time; }
   Weight dimacsTop() const { return dimacs_top; }
   int dimacsNvars() const { return dimacs_nvars; }
 
   //api-support for adding hard or soft clauses
-  void addHardClause(vector<Lit> &lits);
+  void addHardClause(vector<Lit> &lits, bool is_xor=false);
   void addSoftClause(vector<Lit> &lits, Weight w);
   void addHardClause(Lit p) { vector<Lit> tmp {p}; addHardClause(tmp); }
   void addHardClause(Lit p, Lit q) { vector<Lit> tmp {p, q}; addHardClause(tmp); }
