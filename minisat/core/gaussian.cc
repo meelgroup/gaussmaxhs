@@ -117,7 +117,7 @@ bool Gaussian::init_until_fixedpoint()
         CRef confl;
         gaussian_ret g = perform_gauss(confl);
         switch (g) {
-            case unit_conflict:
+            case empty_conflict:
             case conflict:
                 #ifdef VERBOSE_DEBUG
                 cout << "(" << matrix_no << ") conflict at level 0" << endl;
@@ -486,7 +486,7 @@ Gaussian::gaussian_ret Gaussian::perform_gauss(CRef& confl)
         ret = handle_matrix_prop_and_confl(cur_matrixset, last_row, confl);
     //}
     #ifdef DEBUG_GAUSS
-    assert(ret == conflict || ret == unit_conflict || ret == unit_propagation || nothing_to_propagate(cur_matrixset));
+    assert(ret == conflict || ret == empty_conflict || ret == unit_propagation || nothing_to_propagate(cur_matrixset));
     #endif
 
     if (!cur_matrixset.num_cols || !cur_matrixset.num_rows) {
@@ -501,8 +501,8 @@ Gaussian::gaussian_ret Gaussian::perform_gauss(CRef& confl)
         cout << "nothing" << endl;
     } else if (ret == conflict) {
         cout << "conflict" << endl;
-    } else if (ret == unit_conflict) {
-        cout << "unit_conflict";
+    } else if (ret == empty_conflict) {
+        cout << "empty_conflict";
     } else if (ret == propagation) {
         cout << "propagation";
     } else if (ret == unit_propagation) {
@@ -734,7 +734,7 @@ Gaussian::gaussian_ret Gaussian::handle_matrix_confl(
     if (tmp_clause.size() == 0) {
         confl = CRef_Undef;
         solver->ok = false;
-        return unit_conflict;
+        return empty_conflict;
     }
 
     if (maxlevel != solver->decisionLevel()) {
@@ -1037,7 +1037,7 @@ gauss_ret Gaussian::find_truths()
             useful_prop++;
             return gauss_cont;
 
-        case unit_conflict: {
+        case empty_conflict: {
             unit_truths++;
             useful_confl++;
             assert(confl == CRef_Undef);

@@ -95,7 +95,7 @@ protected:
     const GaussConf& config;
     const uint32_t matrix_no;
 
-    enum gaussian_ret {conflict, unit_conflict, propagation, unit_propagation, nothing};
+    enum gaussian_ret {conflict, empty_conflict, propagation, unit_propagation, nothing};
     gaussian_ret perform_gauss(CRef& confl);
 
     vector<uint32_t> col_to_var_original; //Matches columns to variables
