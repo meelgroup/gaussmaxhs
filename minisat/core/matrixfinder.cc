@@ -123,7 +123,8 @@ bool MatrixFinder::findMatrixes()
 
     vector<uint32_t> newSet;
     set<uint32_t> tomerge;
-    for (const Xor& x : solver->xorclauses) {
+    for (unsigned i =0; i < solver->xorclauses.size(); i++) {
+        const Xor& x = solver->xorclauses[i];
         if (belong_same_matrix(x)) {
             continue;
         }
@@ -179,7 +180,6 @@ bool MatrixFinder::findMatrixes()
     const double time_used = cpuTime() - myTime;
     if (solver->verbosity) {
         cout << "c Found matrixes: " << numMatrixes
-        << solver->print_times(time_used, time_out)
         << endl;
     }
 
@@ -194,7 +194,8 @@ bool MatrixFinder::findMatrixes()
 
 uint32_t MatrixFinder::setMatrixes()
 {
-    if (solver->independent_vars) {
+    //TODO CMS later not so important
+    /*if (solver->independent_vars) {
         uint32_t size_at_least = (double)solver->independent_vars->size()*3;
         if (solver->gaussconf.max_matrix_rows < size_at_least) {
             solver->gaussconf.max_matrix_rows = size_at_least;
@@ -204,10 +205,10 @@ uint32_t MatrixFinder::setMatrixes()
                 << endl;
             }
         }
-    }
+    }*/
 
     vector<MatrixShape> matrix_shape;
-    vector<vector<Xor> > xorsInMatrix(matrix_no);
+    vector<vec<Xor> > xorsInMatrix(matrix_no);
 
     for (uint32_t i = 0; i < matrix_no; i++) {
         matrix_shape.push_back(MatrixShape(i));
@@ -215,7 +216,8 @@ uint32_t MatrixFinder::setMatrixes()
         matrix_shape[i].cols = reverseTable[i].size();
     }
 
-    for (const Xor& x : solver->xorclauses) {
+    for (int i = 0; i < solver->xorclauses.size(); i++) {
+        const Xor& x = solver->xorclauses[i];
         //take 1st variable to check which matrix it's in.
         const uint32_t matrix = table[x[0]];
         assert(matrix < matrix_no);
@@ -223,7 +225,7 @@ uint32_t MatrixFinder::setMatrixes()
         //for stats
         matrix_shape[matrix].rows ++;
         matrix_shape[matrix].sum_xor_sizes += x.size();
-        xorsInMatrix[matrix].push_back(x);
+        xorsInMatrix[matrix].push(x);
     }
 
     for(auto& m: matrix_shape) {
@@ -254,8 +256,9 @@ uint32_t MatrixFinder::setMatrixes()
             continue;
         }
 
+        //TODO CMS later
         double ratio_indep = 0;
-        if (solver->independent_vars) {
+        /*if (solver->independent_vars) {
             uint32_t indep_var_inside_matrix = 0;
 
             //'seen' with what is in Matrix
@@ -280,7 +283,7 @@ uint32_t MatrixFinder::setMatrixes()
             }
 
             ratio_indep = (double)indep_var_inside_matrix/(double)reverseTable[i].size();
-        }
+        }*/
 
 
         bool use_matrix = false;

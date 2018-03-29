@@ -204,7 +204,7 @@ public:
         rhs_internal = v.rhs;
     }
 
-    bool fill(vector<Lit>& tmp_clause, const vector<lbool>& assigns, const vector<uint32_t>& col_to_var_original) const;
+    bool fill(vec<Lit>& tmp_clause, const VMap<lbool>& assigns, const vector<uint32_t>& col_to_var_original) const;
 
     unsigned long int scan(const unsigned long int var) const
     {
@@ -299,8 +299,8 @@ inline uint32_t PackedRow::popcnt(const uint32_t from) const
     return popcnt;
 }
 
-inline bool PackedRow::fill(vector<Lit>& tmp_clause
-    , const vector<lbool>& assigns
+inline bool PackedRow::fill(vec<Lit>& tmp_clause
+    , const VMap<lbool>& assigns
     , const vector<uint32_t>& col_to_var_original
 ) const {
     bool final = !rhs_internal;
@@ -315,11 +315,11 @@ inline bool PackedRow::fill(vector<Lit>& tmp_clause
 
             const lbool val = assigns[var];
             const bool val_bool = val == l_True;
-            tmp_clause.push_back(mkLit(var, val_bool));
+            tmp_clause.push(mkLit(var, val_bool));
             final ^= val_bool;
             if (val == l_Undef) {
                 assert(!wasundef);
-                std::swap(tmp_clause[0], tmp_clause.back());
+                std::swap(tmp_clause[0], tmp_clause[tmp_clause.size()-1]);
                 wasundef = true;
             }
         }

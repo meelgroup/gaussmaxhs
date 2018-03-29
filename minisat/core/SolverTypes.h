@@ -162,7 +162,8 @@ class Clause {
         unsigned learnt    : 1;
         unsigned has_extra : 1;
         unsigned reloced   : 1;
-        unsigned size      : 27; }                        header;
+        unsigned gauss     : 1;
+        unsigned size      : 26; }                        header;
     union { Lit lit; float act; uint32_t abs; CRef rel; } data[0];
 
     friend class ClauseAllocator;
@@ -174,6 +175,7 @@ class Clause {
         header.has_extra = use_extra;
         header.reloced   = 0;
         header.size      = ps.size();
+        header.gauss     = 0;
 
         for (int i = 0; i < ps.size(); i++) 
             data[i].lit = ps[i];
@@ -211,6 +213,8 @@ public:
         data[header.size].abs = abstraction;  }
 
 
+    void set_gauss_temp_cl() { header.gauss = 1; }
+    bool get_gauss_temp_cl() const { return header.gauss; }
     int          size        ()      const   { return header.size; }
     void         shrink      (int i)         { assert(i <= size()); if (header.has_extra) data[header.size-i] = data[header.size]; header.size -= i; }
     void         pop         ()              { shrink(1); }

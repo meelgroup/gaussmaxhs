@@ -47,6 +47,15 @@ using std::endl;
 static const uint16_t unassigned_col = std::numeric_limits<uint16_t>::max();
 static const uint32_t unassigned_var = std::numeric_limits<uint32_t>::max();
 
+
+inline double float_div(const double a, const double b)
+{
+    if (b != 0)
+        return a/b;
+
+    return 0;
+}
+
 Gaussian::Gaussian(
     Solver* _solver
     , const vec<Xor>& _xors
@@ -706,7 +715,7 @@ Gaussian::gaussian_ret Gaussian::handle_matrix_confl(
     assert(best_row != std::numeric_limits<uint32_t>::max());
 
     const bool wasUndef = m.matrix.getVarsetAt(best_row).fill(tmp_clause, solver->assigns, col_to_var_original);
-    release_assert(!wasUndef);
+    assert(!wasUndef);
     /*
      * TODO: try out on a cluster
      *
@@ -722,13 +731,9 @@ Gaussian::gaussian_ret Gaussian::handle_matrix_confl(
     << "rhs:" << rhs << endl;
     #endif
 
-    if (tmp_clause.size() <= 1) {
-        if (tmp_clause.size() == 1) {
-            confl = CRef(tmp_clause[0], false);
-        } else {
-            confl = CRef();
-            solver->ok = false;
-        }
+    if (tmp_clause.size() == 0) {
+        confl = CRef_Undef;
+        solver->ok = false;
         return unit_conflict;
     }
 
@@ -739,68 +744,39 @@ Gaussian::gaussian_ret Gaussian::handle_matrix_confl(
     assert(maxlevel == curr_dec_level);
 
     uint32_t first_var = std::numeric_limits<uint32_t>::max();
-    if (tmp_clause.size() == 2) {
-        solver->attach_bin_clause(tmp_clause[0], tmp_clause[1], true, false);
-        Lit lit1 = tmp_clause[0];
-        Lit lit2 = tmp_clause[1];
-        seen[lit1.var()] = 1;
-        seen[lit2.var()] = 1;
 
-        for (int i = solver->trail.size()-1; i >= 0; i --) {
-            uint32_t v = solver->trail[i].var();
-            if (v < seen.size() && seen[v]) {
-                first_var = v;
-                break;
-            }
+    //NOTE: No need to put this clause into some special struct
+    //it will be immediately freed after calling solver->handle_conflict()
+    confl = solver->ca.alloc(tmp_clause, true);
+    Clause& cl = solver->ca[confl];
+
+    uint32_t first_var_at = std::numeric_limits<uint32_t>::max();
+    for(size_t i = 0; i < tmp_clause.size(); i++) {
+        Lit l = tmp_clause[i];
+        if (solver->level(var(l)) == curr_dec_level) {
+            seen[var(l)] = 1;
         }
-
-        if (lit1.var() == first_var) {
-            std::swap(lit1, lit2);
-        }
-
-        seen[lit1.var()] = 0;
-        seen[lit2.var()] = 0;
-
-        confl = CRef(lit1, false);
-        solver->failBinLit = lit2;
-    } else {
-        //NOTE: No need to put this clause into some special struct
-        //it will be immediately freed after calling solver->handle_conflict()
-        Clause* cl = (Clause*)solver->cl_alloc.Clause_new(tmp_clause
-        , solver->sumConflicts
-        #ifdef STATS_NEEDED
-        , 1
-        #endif
-        );
-        confl = CRef(solver->cl_alloc.get_offset(cl));
-
-        uint32_t first_var_at = std::numeric_limits<uint32_t>::max();
-        for(Lit l: tmp_clause) {
-            if (solver->varData[l.var()].level == curr_dec_level) {
-                seen[l.var()] = 1;
-            }
-        }
-
-        for (int i = solver->trail.size()-1; i >= 0; i --) {
-            uint32_t v = solver->trail[i].var();
-            if (v < seen.size() && seen[v]) {
-                first_var = v;
-                break;
-            }
-        }
-        for(size_t i = 0; i < tmp_clause.size(); i++) {
-            Lit l = tmp_clause[i];
-            if (l.var() == first_var) {
-                first_var_at = i;
-            }
-            if (solver->varData[l.var()].level == curr_dec_level) {
-                seen[l.var()] = 0;
-            }
-        }
-
-        std::swap((*cl)[first_var_at], (*cl)[1]);
-        cl->set_gauss_temp_cl();
     }
+
+    for (int i = solver->trail.size()-1; i >= 0; i --) {
+        uint32_t v = var(solver->trail[i]);
+        if (v < seen.size() && seen[v]) {
+            first_var = v;
+            break;
+        }
+    }
+    for(size_t i = 0; i < tmp_clause.size(); i++) {
+        Lit l = tmp_clause[i];
+        if (var(l) == first_var) {
+            first_var_at = i;
+        }
+        if (solver->level(var(l)) == curr_dec_level) {
+            seen[var(l)] = 0;
+        }
+    }
+
+    std::swap(cl[first_var_at], cl[1]);
+    cl.set_gauss_temp_cl();
     messed_matrix_vars_since_reversal = true;
 
     return conflict;
@@ -894,8 +870,8 @@ void Gaussian::analyse_confl(
         const uint32_t real_var = col_to_var_original[var];
         assert(real_var < solver->nVars());
 
-        if (solver->varData[real_var].level > this_maxlevel)
-            this_maxlevel = solver->varData[real_var].level;
+        if (solver->level(real_var) > this_maxlevel)
+            this_maxlevel = solver->level(real_var);
         var++;
         this_size++;
     }
@@ -967,27 +943,16 @@ Gaussian::gaussian_ret Gaussian::handle_matrix_prop(matrixset& m, const uint32_t
             solver->cancelUntil(0);
             solver->enqueue(tmp_clause[0]);
             return unit_propagation;
-        case 2: {
-            solver->attach_bin_clause(tmp_clause[0], tmp_clause[1], true, false);
-            solver->attach_bin_clause(~tmp_clause[0], ~tmp_clause[1], true, false);
-            solver->enqueue(tmp_clause[0], CRef(tmp_clause[1], true));
-            return propagation;
-        }
         default:
             if (solver->decisionLevel() == 0) {
                 solver->enqueue(tmp_clause[0]);
                 return unit_propagation;
             }
-            Clause* x = solver->cl_alloc.Clause_new(tmp_clause
-            , solver->sumConflicts
-            #ifdef STATS_NEEDED
-            , 1
-            #endif
-            );
-            ClOffset offs = solver->cl_alloc.get_offset(x);
+            CRef offs = solver->ca.alloc(tmp_clause, true);
+            Clause& x = solver->ca[offs];
             assert(m.matrix.getMatrixAt(row).rhs() == !tmp_clause[0].sign());
             assert(solver->value(tmp_clause[0]) == l_Undef);
-            x->set_gauss_temp_cl();
+            x.set_gauss_temp_cl();
 
             clauses_toclear.push_back(GaussClauseToClear(offs, solver->trail.size()-1));
             solver->enqueue(tmp_clause[0], CRef(offs));
@@ -1004,7 +969,7 @@ void Gaussian::canceling(const uint32_t sublevel)
         ; i >= 0 && clauses_toclear[i].sublevel >= sublevel
         ; i--
     ) {
-        solver->cl_alloc.clauseFree(clauses_toclear[i].offs);
+        solver->ca.free(clauses_toclear[i].offs);
         rem++;
     }
     clauses_toclear.resize(clauses_toclear.size()-rem);
@@ -1021,10 +986,10 @@ void Gaussian::canceling(const uint32_t sublevel)
 
     int c = std::min((int)gauss_last_level, (int)(solver->trail.size())-1);
     for (; c >= (int)sublevel; c--) {
-        uint32_t var  = solver->trail[c].var();
-        if (var < var_is_in.getSize()
-            && var_is_in[var]
-            && cur_matrixset.col_is_set[var_to_col[var]]
+        uint32_t v  = var(solver->trail[c]);
+        if (v < var_is_in.getSize()
+            && var_is_in[v]
+            && cur_matrixset.col_is_set[var_to_col[v]]
         ) {
             messed_matrix_vars_since_reversal = true;
             return;
@@ -1059,9 +1024,7 @@ gauss_ret Gaussian::find_truths()
     switch (g) {
         case conflict:
             useful_confl++;
-            if (confl.isClause()) {
-                clauses_toclear.push_back(GaussClauseToClear(confl.get_offset(), solver->trail.size()-1));
-            }
+            clauses_toclear.push_back(GaussClauseToClear(confl, solver->trail.size()-1));
             found_conflict = confl;
             return gauss_confl;
 
@@ -1077,34 +1040,14 @@ gauss_ret Gaussian::find_truths()
         case unit_conflict: {
             unit_truths++;
             useful_confl++;
-            if (confl.isNULL()) {
+            assert(confl == CRef_Undef);
+            if (confl == CRef_Undef) {
                 #ifdef VERBOSE_DEBUG
                 cout << "(" << matrix_no << ")zero-length conflict. UNSAT" << endl;
                 #endif
                 solver->ok = false;
                 return gauss_false;
             }
-
-            Lit lit = confl.lit2();
-            solver->cancelUntil(0);
-
-            #ifdef VERBOSE_DEBUG
-            cout << "(" << matrix_no << ")one-length conflict" << endl;
-            #endif
-
-            if (solver->value(lit) != l_Undef) {
-                assert(solver->value(lit) == l_False);
-                #ifdef VERBOSE_DEBUG
-                cout << "(" << matrix_no << ") -> UNSAT" << endl;
-                #endif
-                solver->ok = false;
-                return gauss_false;
-            }
-
-            #ifdef VERBOSE_DEBUG
-            cout << "(" << matrix_no << ") -> setting to correct value" << endl;
-            #endif
-            solver->enqueue(lit);
             return gauss_cont;
         }
 
