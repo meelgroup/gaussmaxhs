@@ -29,6 +29,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "minisat/core/SolverTypes.h"
 #include "minisat/core/gaussconfig.h"
 #include "minisat/core/xor.h"
+#include "minisat/core/gaussian.h"
 
 
 namespace Minisat {
@@ -164,6 +165,8 @@ public:
     bool clean_xor_clauses(vec<Xor>& xors);
     bool clean_one_xor(Xor& x);
     bool fully_enqueue_this(const Lit lit);
+    vector<Gaussian*> gauss;
+    void clear_gauss();
 
 protected:
 

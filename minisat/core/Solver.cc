@@ -24,6 +24,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "minisat/mtl/Sort.h"
 #include "minisat/utils/System.h"
 #include "minisat/core/Solver.h"
+#include "minisat/core/matrixfinder.h"
+#include "minisat/core/gaussian.h"
 
 using namespace Minisat;
 
@@ -101,11 +103,13 @@ Solver::Solver() :
   , conflict_budget    (-1)
   , propagation_budget (-1)
   , asynch_interrupt   (false)
-{}
+{
+}
 
 
 Solver::~Solver()
 {
+    clear_gauss();
 }
 
 
@@ -230,6 +234,10 @@ bool Solver::satisfied(const Clause& c) const {
 //
 void Solver::cancelUntil(int level) {
     if (decisionLevel() > level){
+        for (Gaussian* gauss : gauss_matrixes) {
+            gauss->canceling(trail_lim[level]);
+        }
+
         for (int c = trail.size()-1; c >= trail_lim[level]; c--){
             Var      x  = var(trail[c]);
             assigns [x] = l_Undef;
@@ -772,6 +780,7 @@ lbool Solver::search(int nof_conflicts)
 	  }
 
             // CONFLICT
+            confl:
             conflicts++; conflictC++;
             if (decisionLevel() == 0) return l_False;
 
@@ -806,6 +815,27 @@ lbool Solver::search(int nof_conflicts)
             }
 
         }else{
+            bool at_least_one_continue = false;
+            for (Gaussian* g: gauss_matrixes) {
+                gauss_ret ret = g->find_truths();
+                switch (ret) {
+                    case gauss_cont:
+                        at_least_one_continue = true;
+                        break;
+                    case gauss_false:
+                        return l_False;
+                    case gauss_confl:
+                        confl = g->found_conflict;
+                        goto confl;
+                    case gauss_nothing:
+                        ;
+                }
+            }
+            if (at_least_one_continue) {
+                goto prop;
+            }
+            assert(ok);
+
             // NO CONFLICT
             if ((nof_conflicts >= 0 && conflictC >= nof_conflicts) || !withinBudget()){
                 // Reached bound on number of conflicts:
@@ -828,6 +858,11 @@ lbool Solver::search(int nof_conflicts)
                 if (value(p) == l_True){
                     // Dummy decision level:
                     newDecisionLevel();
+
+                    for (Gaussian* g: gauss_matrixes) {
+                        gauss_ret ret = g->find_truths();
+                        assert(ret == gauss_nothing);
+                    }
                 }else if (value(p) == l_False){
                     analyzeFinal(~p, conflict);
                     return l_False;
@@ -851,6 +886,7 @@ lbool Solver::search(int nof_conflicts)
             newDecisionLevel();
             uncheckedEnqueue(next);
         }
+        prop:;
     }
 }
 
@@ -914,6 +950,7 @@ lbool Solver::solve_()
     learntsize_adjust_cnt     = (int)learntsize_adjust_confl;
     lbool   status            = l_Undef;
 
+
     if (verbosity >= 1){
         printf("============================[ Search Statistics ]==============================\n");
         printf("| Conflicts |          ORIGINAL         |          LEARNT          | Progress |\n");
@@ -956,6 +993,20 @@ lbool Solver::solve_()
 
     int curr_restarts = 0;
     while (status == l_Undef){
+        clear_gauss();
+        MatrixFinder mfinder(this);
+        ok = mfinder.findMatrixes();
+        if (!ok) {
+            status = l_False;
+            break;
+        }
+        for (Gaussian* g : gauss_matrixes) {
+            if (!g->init_until_fixedpoint()) {
+                status = l_False;
+                break;
+            }
+        }
+
         double rest_base = luby_restart ? luby(restart_inc, curr_restarts) : pow(restart_inc, curr_restarts);
         status = search(rest_base * restart_first);
         if (!withinBudget()) break;
@@ -1146,6 +1197,17 @@ void Solver::relocAll(ClauseAllocator& to)
             clauses[j++] = clauses[i];
         }
     clauses.shrink(i - j);
+
+    for (int x = 0; x < gauss.size(); x++) {
+        for (i = j = 0; i < gauss[x]->clauses_toclear.size(); i++) {
+            GaussClauseToClear& gcl = gauss[x]->clauses_toclear[i];
+            if (!isRemoved(gcl.offs)) {
+                ca.reloc(gcl.offs, to);
+                gauss[x]->clauses_toclear[j++] = gauss[x]->clauses_toclear[i];
+            }
+            gauss[x]->clauses_toclear.resize(j);
+        }
+    }
 }
 
 
@@ -1246,4 +1308,15 @@ bool Solver::fully_enqueue_this(const Lit lit)
         return false;
     }
     return true;
+}
+
+void Solver::clear_gauss()
+{
+    for(Gaussian* g: gauss_matrixes) {
+        if (verbosity) {
+            g->print_stats();
+        }
+        delete g;
+    }
+    gauss_matrixes.clear();
 }
