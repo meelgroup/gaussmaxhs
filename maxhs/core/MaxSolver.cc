@@ -1272,6 +1272,7 @@ void MaxSolver::processMutexes() {
 }
 
 void MaxSolver::seed_equivalence() {
+    assert(false && "This does NOT work with XOR");
   /*find clauses that can be feed into CPLEX.
 
     If number of vars < params.seed_all_limit give CPLEX all clauses.
