@@ -363,6 +363,25 @@ bool miniSolver::addClause(const vector<Lit>& lts)
     return true;
 }
 
+bool miniSolver::addXorClause(const vector<Lit>& lts)
+{
+  vec<Lit> ps;
+  for(auto lt: lts) {
+    freezeVar(var(ex2in(lt)));
+    ensure_mapping(lt);
+    if(isEliminated(var(ex2in(lt)))) {
+      ps.clear();
+      break;
+    }
+    ps.push(ex2in(lt));
+  }
+
+  //DEBUG
+  //cout << "mini addCls: ext=" << lts << " int=" << ps << "\n";
+
+  //add_xor_clause_inter(ps, true);
+}
+
 void miniSolver::setPolarity(Var v, lbool pol) {
   Var in = ex2in(v);
   assert(in != var_Undef);
