@@ -566,13 +566,13 @@ void Wcnf::rmUnits() {
         if(!sat_solver.addClause(x)) {
             unsat = true;
             return;
-        } else {
-            if(!sat_solver.addXorClause(x)) {
-                unsat = true;
-                return;
-            }
         }
-    }
+      } else {
+        if(!sat_solver.addXorClause(x)) {
+            unsat = true;
+            return;
+        }
+      }
   }
 
   auto ph = hard_cls.size();

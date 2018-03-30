@@ -377,7 +377,7 @@ bool miniSolver::addXorClause(const vector<Lit>& lts)
   }
 
   //DEBUG
-  //cout << "mini addCls: ext=" << lts << " int=" << ps << "\n";
+  cout << "mini XOR addCls: ext=" << lts << " int=" << ps << "\n";
 
   //add_xor_clause_inter(ps, true);
 }
