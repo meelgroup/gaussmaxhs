@@ -1216,9 +1216,13 @@ void MaxSolver::cplexAddNewClauses() {
     cout << "c CPLEX: += " << cplexClauses.size() << " Clauses. Average size ="
          << totalLits/cplexClauses.size() << "\n";
   }
-  for(size_t i = 0; i < cplexClauses.size(); i++)
+
+  //TODO CMS: Note that since the limit is set and forced to 0, nothing will be added!
+  //limit is "params.seed_max"
+  assert(cplexClauses.empty());
+  /*for(size_t i = 0; i < cplexClauses.size(); i++)
     cplexAddCls(cplexClauses.getVec(i));
-  cplexClauses.clear();
+  cplexClauses.clear();*/
 }
 
 void MaxSolver::greedyAddNewClauses() {
@@ -1227,9 +1231,13 @@ void MaxSolver::greedyAddNewClauses() {
     cout << "c GREEDY: += " << greedyClauses.size() << " Clauses. Average size ="
          << totalLits/greedyClauses.size() << "\n";
   }
-  for(size_t i = 0; i < greedyClauses.size(); i++)
-    greedysolver->addClause(greedyClauses.getVec(i));
- greedyClauses.clear();
+  for(size_t i = 0; i < greedyClauses.size(); i++) {
+      bool is_xor;
+      vector<Lit> x = greedyClauses.getVec(i, is_xor);
+      assert(!is_xor);
+      greedysolver->addClause(x);
+  }
+  greedyClauses.clear();
 }
 
 void MaxSolver::processMutexes() {
@@ -1389,6 +1397,7 @@ void MaxSolver::seed_equivalence() {
 
   size_t n_cores {}, n_ncores {}, n_mixed {}, n_ordinary {};
   double l_cores {}, l_ncores {}, l_mixed {}, l_ordinary {};
+  //TODO CMS: Note that since the limit is set and forced to 0, nothing will be added!
   int limit {params.seed_max};
 
   l_cores    = addUpTo(cores, limit, n_cores);
@@ -1806,9 +1815,18 @@ void MaxSolver::configBvar(Var bvar, SatSolver* slv) {
 
 void MaxSolver::addHards(SatSolver* slv) {
   for (size_t i = 0; i < theWcnf->nHards(); i++) {
-    if (!slv->addClause(theWcnf->getHard(i))) {
-      cout << "c Adding hard clauses caused unsat.\n";
-      return;
+    bool is_xor;
+    auto x = theWcnf->getHard(i, is_xor);
+    if (!is_xor) {
+        if (!slv->addClause(x)) {
+          cout << "c Adding hard clauses caused unsat.\n";
+          return;
+        }
+    } else {
+        if (!slv->addXorClause(x)) {
+          cout << "c Adding hard XOR clauses caused unsat.\n";
+          return;
+        }
     }
     for(auto lt : theWcnf->hards()[i])
       if(bvars.isBvar(lt) ||
@@ -1820,14 +1838,24 @@ void MaxSolver::addHards(SatSolver* slv) {
 
 void MaxSolver::addHards(SatSolver* slv, const vector<int>& indicies) {
   for(auto i : indicies) {
-    if (!slv->addClause(theWcnf->getHard(i))) {
-      cout << "c Adding hard clauses caused unsat.\n";
-      return;
-    }
-    for(auto lt : theWcnf->hards()[i])
-      if(bvars.isBvar(lt) ||
-         (params.mx_seed_originals && bvars.inMutex(lt)))
-        configBvar(var(lt), slv);
+      bool is_xor;
+      vector<Lit> x = theWcnf->getHard(i, is_xor);
+      if (!is_xor) {
+          if (!slv->addClause(x)) {
+            cout << "c Adding Norm hard clauses caused unsat.\n";
+            return;
+          }
+      } else {
+          if (!slv->addXorClause(x)) {
+            cout << "c Adding XOR hard clauses caused unsat.\n";
+            return;
+          }
+      }
+
+      for(auto lt : theWcnf->hards()[i])
+        if(bvars.isBvar(lt) ||
+           (params.mx_seed_originals && bvars.inMutex(lt)))
+          configBvar(var(lt), slv);
   }
 }
 
@@ -1840,7 +1868,9 @@ void MaxSolver::addSofts(SatSolver* slv) {
 
     if(theWcnf->softSize(i) > 1) {
       //Only non-unit softs get added to solver (units are handled in the assumptions)
-      vector<Lit> sftCls {theWcnf->getSoft(i)};
+      bool is_xor;
+      vector<Lit> sftCls {theWcnf->getSoft(i, is_xor)};
+      assert(!is_xor);
       sftCls.push_back(blit);
       if(!slv->addClause(sftCls)) {
         cout << "c ERROR: soft clause " << i << " caused solver UNSAT state!\n";
@@ -1860,7 +1890,9 @@ void MaxSolver::addSofts(SatSolver* slv, const vector<int>& indicies) {
     Lit blit = bvars.litOfCls(i);
     if(theWcnf->softSize(i) > 1) {
       //Only non-unit softs get added to solver (units are handled in the assumptions)
-      vector<Lit> sftCls {theWcnf->getSoft(i)};
+      bool is_xor;
+      vector<Lit> sftCls {theWcnf->getSoft(i, is_xor)};
+      assert(!is_xor);
       sftCls.push_back(blit);
       if(!slv->addClause(sftCls)) {
         cout << "c ERROR: soft clause " << i << " caused solver UNSAT state!\n";

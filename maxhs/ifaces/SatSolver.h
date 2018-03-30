@@ -213,6 +213,8 @@ namespace MaxHS_Iface {
     //add clause to theory, return theory status
     virtual bool addClause(const vector<Lit>& lts) = 0;
     bool addClause(Lit p) { vector<Lit> tmp; tmp.push_back(p); return(addClause(tmp)); }
+    virtual bool addXorClause(const vector<Lit>& lts) = 0;
+    bool addXorClause(Lit p) { vector<Lit> tmp; tmp.push_back(p); return(addXorClause(tmp)); }
 
     //set polarity of variable (lbool b = l_True if we give it a sign---set to false)
     virtual void setPolarity(Var v, lbool b) = 0;

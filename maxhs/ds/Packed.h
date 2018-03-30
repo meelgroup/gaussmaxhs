@@ -64,8 +64,8 @@ public:
   const_iterator end() const;
 
   /* internal vectors <--> standard vectors */
-  void addVec(const vector<T> &); //will add and get zero sized vecs.
-  vector<T> getVec (size_t i) const;
+  void addVec(const vector<T> &, bool is_xor = false); //will add and get zero sized vecs.
+  vector<T> getVec (size_t i, bool& is_xor) const;
   size_t ithSize(size_t i) const; //Return size of i-th internal vector
 
   void compress(); //remove spaces; Retain zero length vectors
@@ -90,14 +90,17 @@ public:
        subsequence of a std::vector) */
   public:
     ivec(Packed_vecs<T> * pv, size_t index): i(index),  p(pv) {}
-    size_t size() const { return p->sizes[i]; }
+    size_t size() const { return p->sizes[i].sz; }
     bool empty() const { return !size(); }
+    bool is_xor() const { return p->sizes[i].is_xor; }
 
     typename vector<T>::iterator begin() const { return p->allVecs.begin()+p->offsets[i]; }
-    typename vector<T>::iterator end() const { return begin()+p->sizes[i]; }
+    typename vector<T>::iterator end() const { return begin()+p->sizes[i].sz; }
     T& operator[](size_t j) const { return p->allVecs[p->offsets[i]+j]; }
     void shrink(size_t n) const { p->sizes[i] -= n; }
-    vector<T> getVec() const { return p->getVec(i); }
+    vector<T> getVec(bool& is_xor) const {
+        return p->getVec(i, is_xor);
+    }
   private:
     size_t i;
     Packed_vecs<T> *p;
@@ -107,12 +110,12 @@ public:
   public:
     const_ivec(const Packed_vecs<T> *pv, size_t index): i (index), p (pv) {}
     const_ivec(ivec iv): p (iv.p), i (iv.i) {}
-    size_t size() const { return p->sizes[i]; }
+    size_t size() const { return p->sizes[i].sz; }
     bool empty() const { return !size(); }
     typename vector<T>::const_iterator begin() const {
       return p->allVecs.cbegin()+p->offsets[i]; }
     typename vector<T>::const_iterator end() const {
-      return begin()+p->sizes[i]; }
+      return begin()+p->sizes[i].sz; }
     const T& operator[](size_t j) const { return p->allVecs[p->offsets[i]+j]; }
     const vector<T> getVec() const { return p->getVec(i); }
   private:
@@ -148,9 +151,18 @@ public:
   };
 
 private:
+    struct sz_and_xor {
+        size_t sz;
+        bool is_xor;
+
+        sz_and_xor(size_t _sz, bool _is_xor) {
+            sz = _sz;
+            is_xor = _is_xor;
+        }
+    };
   vector<size_t> offsets;
   vector<T> allVecs;
-  vector<size_t> sizes;
+  vector<sz_and_xor> sizes;
 };
 
 template <class T>
@@ -187,19 +199,20 @@ inline typename Packed_vecs<T>::const_iterator Packed_vecs<T>::end() const {
 }
 
 template <class T>
-inline void Packed_vecs<T>::addVec(const vector<T> &v) 
+inline void Packed_vecs<T>::addVec(const vector<T> &v, bool is_xor)
 {
   offsets.push_back(allVecs.size());
-  sizes.push_back(v.size());
+  sizes.push_back(sz_and_xor(v.size(),is_xor));
   for(size_t i = 0; i < v.size(); i++)
     allVecs.push_back(v[i]);
 }
 
 template <class T>
-inline vector<T> Packed_vecs<T>::getVec(size_t i) const
+inline vector<T> Packed_vecs<T>::getVec(size_t i, bool& is_xor) const
 {
+  is_xor = sizes[i].is_xor;
   vector<T> v;
-  for(size_t j = offsets[i]; j < offsets[i] + sizes[i]; j++)
+  for(size_t j = offsets[i]; j < offsets[i] + sizes[i].sz; j++)
     v.push_back(allVecs[j]);
   return v;
 }
@@ -207,7 +220,7 @@ inline vector<T> Packed_vecs<T>::getVec(size_t i) const
 template <class T>
 inline size_t Packed_vecs<T>::ithSize(size_t i) const
 {
-  return sizes[i];
+  return sizes[i].sz;
 }
 
 template <class T>

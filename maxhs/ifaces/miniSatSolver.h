@@ -93,6 +93,7 @@ public:
 
   bool reduceClause(vector<Lit>& lts) const;
   bool addClause(const vector<Lit>& lts);
+  bool addXorClause(const vector<Lit>& lts);
   void setPolarity(Var v, lbool pol);
   void setDecisionVar(Var v, bool d);
   void newControlVar(Var b, bool dvar, lbool pol);

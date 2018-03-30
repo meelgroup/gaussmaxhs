@@ -132,17 +132,18 @@ void Wcnf::update_maxorigvar(vector<Lit>& lits) {
 }
 
 void Wcnf::addHardClause(vector<Lit>& lits, bool is_xor) {
-    //TODO
   update_maxorigvar(lits);
-  _addHardClause(lits);
+  _addHardClause(lits, is_xor);
 }
 
-void Wcnf::_addHardClause(vector<Lit>& lits) {
+void Wcnf::_addHardClause(vector<Lit>& lits, bool is_xor) {
   //Use this routine when adding a clause not contained in the
   //original formula, e.g., adding preprocessing clause
   if(unsat) return;
-  if(!prepareClause(lits)) return; //skip tautologies
-  hard_cls.addVec(lits);
+  if (!is_xor) {
+      if(!prepareClause(lits)) return; //skip tautologies
+  }
+  hard_cls.addVec(lits, is_xor);
   for(auto l : lits)
     if(maxvar < var(l))
       maxvar = var(l);
@@ -250,11 +251,22 @@ bool Wcnf::subEqs() {
   //among the hard clauses reduced by those units.
   miniSolver sat_solver;
   sat_solver.eliminate(true); //no preprocessing
-  for(size_t i = 0; i < nHards(); i++) 
-    if(!sat_solver.addClause(getHard(i))) {
-      unsat = true;
-      return false;
+  for(size_t i = 0; i < nHards(); i++) {
+      bool is_xor;
+      vector<Lit> x = getHard(i, is_xor);
+      if (!is_xor) {
+        if(!sat_solver.addClause(x)) {
+          unsat = true;
+          return false;
+        }
+      else {
+          if(!sat_solver.addXorClause(x)) {
+          unsat = true;
+          return false;
+        }
+      }
     }
+  }
   vector<Lit> hard_units = sat_solver.getForced(0);
   vector<Lit> binaries = get_binaries(sat_solver);
   
@@ -323,11 +335,21 @@ vector<Lit> Wcnf::get_units() {
   //return the found units 
   miniSolver sat_solver;
   sat_solver.eliminate(true); //no preprocessing
-  for(size_t i = 0; i < nHards(); i++) 
-    if(!sat_solver.addClause(getHard(i))) {
-      unsat = true;
-      return {};
+  for(size_t i = 0; i < nHards(); i++) {
+    bool is_xor;
+    vector<Lit> x = getHard(i, is_xor);
+    if (!is_xor) {
+        if(!sat_solver.addClause(x)) {
+          unsat = true;
+          return {};
+        }
+    } else {
+        if(!sat_solver.addXorClause(x)) {
+          unsat = true;
+          return {};
+        }
     }
+  }
   return sat_solver.getForced(0);
 }
 
@@ -537,11 +559,21 @@ void Wcnf::rmUnits() {
   miniSolver sat_solver;
   sat_solver.eliminate(true); //no preprocessing
 
-  for(size_t i = 0; i < nHards(); i++) 
-    if(!sat_solver.addClause(getHard(i))) {
-      unsat = true;
-      return;
+  for(size_t i = 0; i < nHards(); i++) {
+      bool is_xor;
+      vector<Lit> x = getHard(i, is_xor);
+      if (!is_xor) {
+        if(!sat_solver.addClause(x)) {
+            unsat = true;
+            return;
+        } else {
+            if(!sat_solver.addXorClause(x)) {
+                unsat = true;
+                return;
+            }
+        }
     }
+  }
 
   auto ph = hard_cls.size();
   auto ph_lits = hard_cls.total_size();
@@ -695,11 +727,16 @@ void Wcnf::remDupCls() {
     auto vi = ohard ? hard_cls[i_index] : soft_cls[i_index];
 
     if(cdata[i].w < 0) {
-      tmpH.addVec(vi.getVec());
+      bool is_xor;
+      auto x = vi.getVec(is_xor);
+      tmpH.addVec(x, is_xor);
       //cout << "i = " << i << " Added hard " << vi.getVec() << "\n\n";
     }
     else if(cdata[i].w > 0) {
-      tmpS.addVec(vi.getVec());
+      bool is_xor;
+      auto x = vi.getVec(is_xor);
+      assert(!is_xor);
+      tmpS.addVec(x, is_xor);
       tmp_wts.push_back(cdata[i].w);
       //cout << "i = " << i << " Added soft " << vi.getVec() << " weight = " << cdata[i].w << "\n\n";
     }
@@ -730,8 +767,14 @@ bool Wcnf::eqVecs(const ClsData& a, const ClsData& b) {
   if(sa != sb)
     return false;
   
-  auto va = (a.w < 0) ? getHard(a.index) : getSoft(a.index);
-  auto vb = (b.w < 0) ? getHard(b.index) : getSoft(b.index);
+  bool is_xor_a;
+  auto va = (a.w < 0) ? getHard(a.index, is_xor_a) : getSoft(a.index, is_xor_a);
+  bool is_xor_b;
+  auto vb = (b.w < 0) ? getHard(b.index, is_xor_b) : getSoft(b.index, is_xor_b);
+
+  if (is_xor_a != is_xor_b) {
+    return false;
+  }
   for(size_t i=0; i < va.size(); i++)
     if(va[i] != vb[i])
       return false;
@@ -800,13 +843,25 @@ void Wcnf::simpleHarden() {
   miniSolver sat_solver;
   sat_solver.eliminate(true); //no preprocessing due to incremental use of solver
 
-  for(size_t i = 0; i < nHards(); i++) 
-    if(!sat_solver.addClause(getHard(i))) {
-      unsat = true;
-      if(params.verbosity > 0)
-        cout << "c WCNF hardened 0 soft clauses\n";
-      return;
+  for(size_t i = 0; i < nHards(); i++) {
+    bool is_xor;
+    vector<Lit> x = getHard(i, is_xor);
+    if (!is_xor) {
+        if(!sat_solver.addClause(x)) {
+          unsat = true;
+          if(params.verbosity > 0)
+            cout << "c WCNF hardened 0 soft clauses\n";
+          return;
+        }
+    } else {
+        if(!sat_solver.addXorClause(x)) {
+          unsat = true;
+          if(params.verbosity > 0)
+            cout << "c WCNF hardened 0 soft clauses\n";
+          return;
+        }
     }
+  }
 
   //Debug
   /*cout << "Diffwts = [";
@@ -829,8 +884,12 @@ void Wcnf::simpleHarden() {
     for(size_t c =0; c < nSofts(); c++) {
       if(soft_clswts[c] >= transitionWts[i] && soft_clswts[c] < maxWt) {
         n++;
-        if(!sat_solver.addClause(getSoft(c))) 
+        bool is_xor;
+        if(!sat_solver.addClause(getSoft(c, is_xor))) {
+          assert(!is_xor);
           break;
+        }
+        assert(!is_xor);
       }
     }
 
@@ -869,11 +928,15 @@ void Wcnf::simpleHarden() {
   for(size_t i = 0; i < nSofts(); i++) 
     if(soft_clswts[i] >= maxHardenWt) {
       nHardened++;
-      auto sftcls = getSoft(i);
+      bool is_xor;
+      auto sftcls = getSoft(i, is_xor);
+      assert(!is_xor);
       _addHardClause(sftcls);
     }
     else {
-      tmp.addVec(getSoft(i));
+      bool is_xor;
+      tmp.addVec(getSoft(i, is_xor));
+      assert(!is_xor);
       tmpWts.push_back(soft_clswts[i]);
     }
   soft_cls = std::move(tmp);
@@ -960,7 +1023,9 @@ void Wcnf::processMxs(vector<vector<Lit>> mxs, Bvars& bvars) {
     //cost of the soft clause.
     for(auto l :mx) {
       auto ci = bvars.clsIndex(l);
-      auto sftcls = getSoft(ci);
+      bool is_xor;
+      auto sftcls = getSoft(ci, is_xor);
+      assert(!is_xor);
 
       if(sftcls.size() == 0) {
         cout << "c ERROR WCNF processMxs encountered zero length soft clause\n";
@@ -1020,7 +1085,9 @@ void Wcnf::processMxs(vector<vector<Lit>> mxs, Bvars& bvars) {
   for(size_t i = 0; i < nSofts(); i++) 
     if(i >= delMarks.size() || !delMarks[i]) { 
       //delmarks don't extend to newly added softs
-      tmp.addVec(getSoft(i));
+      bool is_xor;
+      tmp.addVec(getSoft(i, is_xor));
+      assert(!is_xor);
       soft_clswts[j++] = soft_clswts[i];
     }
   soft_clswts.resize(j);
@@ -1413,14 +1480,24 @@ bool MXFinder::fbeq() {
   if(!params.mx_sat_preprocess)
     solver.eliminate(true); //no preprocessing
 
-  for(size_t i = 0; i < theWcnf->nHards(); i++) 
-    if(!solver.addClause(theWcnf->getHard(i)))  
-      return false; 
+  for(size_t i = 0; i < theWcnf->nHards(); i++) {
+    bool is_xor;
+    vector<Lit> x = theWcnf->getHard(i, is_xor);
+    if (!is_xor) {
+        if(!solver.addClause(x))
+          return false;
+    } else {
+        if(!solver.addXorClause(x))
+          return false;
+    }
+  }
 
   for(size_t i = 0; i < theWcnf->nSofts(); i++) {
     Lit blit = bvars.litOfCls(i);
     if(theWcnf->softSize(i) > 1) {
-      vector<Lit> sftCls {theWcnf->getSoft(i)};
+      bool is_xor;
+      vector<Lit> sftCls {theWcnf->getSoft(i, is_xor)};
+      assert(!is_xor);
       sftCls.push_back(blit);
       if(!solver.addClause(sftCls))
         return false;
@@ -1790,16 +1867,23 @@ void Wcnf::printFormula(Bvars& bvars, std::ostream& out) const {
     out << " formula is UNSAT\n";
   out << "c Hard Clauses # = " << hard_cls.size()+nhard_units << "\n";
   int nh {0};
-  for(size_t i = 0; i < nHards(); i++)
-    out << "h#" << nh++ << ": " << getHard(i) << "\n";
+  for(size_t i = 0; i < nHards(); i++) {
+    bool is_xor;
+    vector<Lit> x = getHard(i, is_xor);
+    out << "h#" << nh++ << ": " << x << " xor:" << is_xor << "\n";
+  }
 
   out << "c Soft Clauses, # = " << soft_cls.size() << "\n";
   out << "c Base cost = " << base_cost << "\n";
 
   int ns {0};
-  for(size_t i = 0; i < nSofts(); i++)
+  for(size_t i = 0; i < nSofts(); i++) {
+    bool is_xor;
+    vector<Lit> x = getSoft(i, is_xor);
+    assert(!is_xor);
     out << "c#" << ns++ << " blit = " << bvars.litOfCls(i) 
-        << " wt = " << getWt(i) << " : " << getSoft(i) << "\n";
+        << " wt = " << getWt(i) << " : " <<  x << "\n";
+  }
 }
 
 void Wcnf::printDimacs(std::ostream& out) const {

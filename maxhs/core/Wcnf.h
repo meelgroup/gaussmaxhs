@@ -139,8 +139,8 @@ public:
   const Packed_vecs<Lit>& hards() const { return hard_cls; }
   const Packed_vecs<Lit>& softs() const { return soft_cls; }
   const vector<Weight>& softWts() const { return soft_clswts; }
-  vector<Lit> getSoft(int i) const { return soft_cls.getVec(i); }
-  vector<Lit> getHard(int i) const { return hard_cls.getVec(i); }
+  vector<Lit> getSoft(int i, bool& is_xor) const { return soft_cls.getVec(i, is_xor); }
+  vector<Lit> getHard(int i, bool& is_xor) const { return hard_cls.getVec(i, is_xor); }
 
   Weight getWt(int i) const { return soft_clswts[i]; }
   size_t softSize(int i) const { return soft_cls.ithSize(i); }
@@ -181,7 +181,7 @@ private:
   bool inputDimacs(std::string filename, bool verify); 
   void update_maxorigvar(vector<Lit>& lits);
   bool prepareClause(vector<Lit> & lits);
-  void _addHardClause(vector<Lit>& lits);
+  void _addHardClause(vector<Lit>& lits, bool is_xor = false);
   void _addHardClause(Lit p) { vector<Lit> tmp {p}; _addHardClause(tmp); }
   void _addHardClause(Lit p, Lit q) { vector<Lit> tmp {p, q}; _addHardClause(tmp); }
   void _addSoftClause(vector<Lit>& lits, Weight w);

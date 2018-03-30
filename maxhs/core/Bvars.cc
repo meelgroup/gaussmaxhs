@@ -88,7 +88,9 @@ void Bvars::printVars() {
     if(isBvar(i)) {
       auto clsi = clsIndex(i);
       Lit blit = litOfCls(clsi);
-      cout << "Clause " << clsi << ". blit = " << blit << " " << theWcnf->getSoft(clsi) << "\n";
+      bool is_xor;
+      cout << "Clause " << clsi << ". blit = " << blit << " " << theWcnf->getSoft(clsi, is_xor) << "\n";
+      cout << "XOR: " << is_xor << std::endl;
       cout << "coreIsPos(" << blit << ") = " << coreIsPos(blit);
       cout << " sign(" << blit << ") = " << sign(blit);
       cout << " isCore(" << blit << ") = " << isCore(blit)
