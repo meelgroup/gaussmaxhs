@@ -63,6 +63,7 @@ public:
     bool    addClause (Lit p, Lit q, Lit r, Lit s);             // Add a quaternary clause to the solver. 
     bool    addClause_(      vec<Lit>& ps);                     // Add a clause to the solver without making superflous internal copy. Will
                                                                 // change the passed vector 'ps'.
+    bool    addXorClause_(      vec<Lit>& ps);
 
     // Solving:
     //

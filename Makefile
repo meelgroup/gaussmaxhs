@@ -39,9 +39,9 @@ BUILD_DIR      ?= build
 MAXHS_RELSYM ?= -g
 
 # Sets of compile flags for different build types
-MAXHS_REL    ?= -O3 -D NDEBUG
-MAXHS_DEB    ?= -O0 -D DEBUG -D_GLIBCXX_DEBUG -ggdb
-MAXHS_PRF    ?= -O3 -D NDEBUG
+MAXHS_REL    ?= -O3
+MAXHS_DEB    ?= -O0 -D_GLIBCXX_DEBUG -ggdb
+MAXHS_PRF    ?= -O3
 
 # GNU Standard Install Prefix
 prefix         ?= /usr/local

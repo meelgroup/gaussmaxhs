@@ -94,7 +94,7 @@ public:
   }
 
   //input clauses
-  void addDimacsClause(vector<Lit> &lits, Weight w, bool is_xor = false); //Changes input vector lits
+  void addDimacsClause(vector<Lit> &lits, Weight w, bool is_xor); //Changes input vector lits
   void set_dimacs_params(int nvars, int nclauses, Weight top = std::numeric_limits<Weight>::max());
   double parseTime() const { return parsing_time; }
   Weight dimacsTop() const { return dimacs_top; }

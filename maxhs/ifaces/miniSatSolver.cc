@@ -378,8 +378,12 @@ bool miniSolver::addXorClause(const vector<Lit>& lts)
 
   //DEBUG
   cout << "mini XOR addCls: ext=" << lts << " int=" << ps << "\n";
+  if(ps.size()>0)
+    return Minisat::SimpSolver::addXorClause(ps);
+  else
+    return true;
 
-  //add_xor_clause_inter(ps, true);
+  return true;
 }
 
 void miniSolver::setPolarity(Var v, lbool pol) {

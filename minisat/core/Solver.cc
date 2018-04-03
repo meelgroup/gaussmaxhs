@@ -47,7 +47,7 @@ static IntOption     opt_restart_first     (_cat, "rfirst",      "The base resta
 static DoubleOption  opt_restart_inc       (_cat, "rinc",        "Restart interval increase factor", 2, DoubleRange(1, false, HUGE_VAL, false));
 static DoubleOption  opt_garbage_frac      (_cat, "gc-frac",     "The fraction of wasted memory allowed before a garbage collection is triggered",  0.20, DoubleRange(0, false, HUGE_VAL, false));
 static IntOption     opt_min_learnts_lim   (_cat, "min-learnts", "Minimum learnt clause limit",  0, IntRange(0, INT32_MAX));
-static IntOption     opt_sat_verb          (_cat, "sverb",   "Verbosity level (0=silent, 1=some, 2=more).", 0, IntRange(0, 2));
+static IntOption     opt_sat_verb          (_cat, "sverb",   "Verbosity level (0=silent, 1=some, 2=more).", 2, IntRange(0, 2));
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -182,6 +182,66 @@ bool Solver::addClause_(vec<Lit>& ps)
     }
 
     return true;
+}
+
+bool    Solver::addXorClause_(      vec<Lit>& ps)
+{
+    cout << "finall, adding ps: " << ps << std::endl;
+
+    assert(ok);
+    assert(decisionLevel() == 0);
+
+    bool rhs =- true;
+    for(int i =0; i < ps.size(); i++) {
+        Lit& lit = ps[i];
+        if (sign(lit)) {
+            rhs ^= true;
+            lit ^= true;
+        }
+    }
+
+    sort(ps);
+    Lit p;
+    uint32_t i, j;
+    for (i = j = 0, p = lit_Undef; i != ps.size(); i++) {
+        assert(sign(ps[i]) == false);
+
+        if (var(ps[i]) == var(p)) {
+            //added, but easily removed
+            j--;
+            p = lit_Undef;
+
+            //Flip rhs if neccessary
+            if (value(ps[i]) != l_Undef) {
+                rhs ^= value(ps[i]) == l_True;
+            }
+
+        } else if (value(ps[i]) == l_Undef) {
+            //Add and remember as last one to have been added
+            ps[j++] = p = ps[i];
+        } else {
+            //modify rhs instead of adding
+            rhs ^= value(ps[i]) == l_True;
+        }
+    }
+    ps.shrink(i - j);
+
+    if (ps.size() != 0) {
+        if (ps.size() > 2) {
+            xorclauses.push(Xor(ps, rhs));
+            cout << "xcl:" << ps << " rhs: " <<  rhs << std::endl;
+        } else {
+            assert(false && "XOR clause must be at least 3 long");
+        }
+        ps[0] ^= rhs;
+    } else {
+        if (rhs) {
+            ok = false;
+        }
+        return ok;
+    }
+
+    return ok;
 }
 
 

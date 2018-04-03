@@ -44,7 +44,7 @@ public:
         rhs(_rhs)
     {
         for (uint32_t i = 0; i < cl.size(); i++) {
-            vars.push_back(cl[i].var());
+            vars.push_back(var(cl[i]));
         }
     }
 

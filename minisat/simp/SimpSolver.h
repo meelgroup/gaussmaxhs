@@ -41,13 +41,14 @@ class SimpSolver : public Solver {
     //
     Var     newVar    (lbool upol = l_Undef, bool dvar = true);
     void    releaseVar(Lit l);
-    bool    addClause (const vec<Lit>& ps);
+    bool    addClause    (const vec<Lit>& ps);
+    bool    addXorClause (const vec<Lit>& ps);
     bool    addEmptyClause();                // Add the empty clause to the solver.
     bool    addClause (Lit p);               // Add a unit clause to the solver.
     bool    addClause (Lit p, Lit q);        // Add a binary clause to the solver.
     bool    addClause (Lit p, Lit q, Lit r); // Add a ternary clause to the solver.
     bool    addClause (Lit p, Lit q, Lit r, Lit s); // Add a quaternary clause to the solver. 
-    bool    addClause_(      vec<Lit>& ps);
+    bool    addClause_   (      vec<Lit>& ps);
     bool    substitute(Var v, Lit x);  // Replace all occurences of v with x (may cause a contradiction).
 
     // Variable mode:
@@ -184,6 +185,7 @@ inline void SimpSolver::updateElimHeap(Var v) {
 
 
 inline bool SimpSolver::addClause    (const vec<Lit>& ps)    { ps.copyTo(add_tmp); return addClause_(add_tmp); }
+inline bool SimpSolver::addXorClause    (const vec<Lit>& ps)    { ps.copyTo(add_tmp); return addXorClause_(add_tmp); }
 inline bool SimpSolver::addEmptyClause()                     { add_tmp.clear(); return addClause_(add_tmp); }
 inline bool SimpSolver::addClause    (Lit p)                 { add_tmp.clear(); add_tmp.push(p); return addClause_(add_tmp); }
 inline bool SimpSolver::addClause    (Lit p, Lit q)          { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); return addClause_(add_tmp); }

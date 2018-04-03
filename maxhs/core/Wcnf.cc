@@ -101,7 +101,6 @@ void Wcnf::addDimacsClause(vector<Lit> &lits, Weight w, bool is_xor) {
 
   if (is_xor) {
       assert(w >= dimacs_top && "xor clauses must be hard clauses");
-      exit(-1);
   }
   if (w >= dimacs_top)
     addHardClause(lits, is_xor);
@@ -292,6 +291,7 @@ bool Wcnf::subEqs() {
   if(all_sccs.size()) cout << all_sccs << "\n";*/
 
   //4. modify the wcnf by the detected equivalents and units
+  assert("XOR this may hurt" && false);
   hard_cls = reduce_by_eqs_and_units(hard_cls, false, all_sccs, hard_units);
   soft_cls = reduce_by_eqs_and_units(soft_cls, true, all_sccs, hard_units);
   
@@ -357,6 +357,7 @@ vector<Lit> Wcnf::get_binaries(miniSolver& sat_solver) {
   vector<Lit> binaries {};
   for(auto& clause : hard_cls) {
     int nlits = 0;
+    assert(!clause.is_xor());
     for(auto l : clause) {
       auto truth_value = sat_solver.curVal(l);
       if(truth_value == l_Undef)
@@ -421,6 +422,7 @@ Packed_vecs<Lit> Wcnf::reduce_by_eqs_and_units(
   size_t j = 0;
   vector<Lit> c;
   for(size_t i = 0; i < cls.size(); i++) {
+    assert(!cls[i].is_xor() && "Not coded yet!");
     c.clear();
     bool isSat {false};
     for(auto l : cls[i]) {
@@ -612,6 +614,8 @@ Packed_vecs<Lit> Wcnf::reduce_by_units(Packed_vecs<Lit>& cls, miniSolver& sat_so
   size_t j = 0;
   vector<Lit> c;
   for(size_t i = 0; i < cls.size(); i++) {
+    assert(!cls[i].is_xor());
+
     c.clear();
     bool isSat {false};
     for(auto l : cls[i]) 
@@ -675,6 +679,7 @@ void Wcnf::remDupCls() {
       bool jhard {cdata[j].w < 0};
       auto vj = jhard ? hard_cls[j_index] : soft_cls[j_index];
       if(vi.size() == 1 && vj.size() == 1 && vi[0] == ~vj[0]) { //contradictory units
+        //NOTE this actually works for XOR, weirdly enough
         if(ihard && jhard) {
           unsat = true;
           return;
@@ -1487,6 +1492,7 @@ bool MXFinder::fbeq() {
         if(!solver.addClause(x))
           return false;
     } else {
+        cout << "adding XOR in fbeq" << std::endl;
         if(!solver.addXorClause(x))
           return false;
     }

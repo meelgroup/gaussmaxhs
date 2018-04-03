@@ -56,7 +56,7 @@ SimpSolver::SimpSolver() :
   , asymm_lits         (0)
   , eliminated_vars    (0)
   , elimorder          (1)
-  , use_simplification (true)
+  , use_simplification (false) //TODO XOR BUG beware, simplification has been turned off!!!
   , occurs             (ClauseDeleted(ca))
   , elim_heap          (ElimLt(n_occ))
   , bwdsub_assigns     (0)
