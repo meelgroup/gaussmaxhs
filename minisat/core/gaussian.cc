@@ -950,7 +950,7 @@ Gaussian::gaussian_ret Gaussian::handle_matrix_prop(matrixset& m, const uint32_t
             }
             CRef offs = solver->ca.alloc(tmp_clause, true);
             Clause& x = solver->ca[offs];
-            assert(m.matrix.getMatrixAt(row).rhs() == !tmp_clause[0].sign());
+            assert(m.matrix.getMatrixAt(row).rhs() == !sign(tmp_clause[0]));
             assert(solver->value(tmp_clause[0]) == l_Undef);
             x.set_gauss_temp_cl();
 

@@ -186,7 +186,11 @@ bool Solver::addClause_(vec<Lit>& ps)
 
 bool    Solver::addXorClause_(      vec<Lit>& ps)
 {
-    cout << "finall, adding ps: " << ps << std::endl;
+    cout << "adding xcl orig " << std::endl;
+    cout << "xcl:";
+    for(int i = 0; i < ps.size(); i++) {
+        cout << (sign(ps[i]) ? "-" : "") << var(ps[i]) << " ";
+    }
 
     assert(ok);
     assert(decisionLevel() == 0);
@@ -227,9 +231,14 @@ bool    Solver::addXorClause_(      vec<Lit>& ps)
     ps.shrink(i - j);
 
     if (ps.size() != 0) {
+        cout << "xcl:";
+        for(int i = 0; i < ps.size(); i++) {
+            cout << (sign(ps[i]) ? "-" : "") << var(ps[i]) << " ";
+        }
+        cout << " rhs: " <<  rhs << std::endl;
+
         if (ps.size() > 2) {
             xorclauses.push(Xor(ps, rhs));
-            cout << "xcl:" << ps << " rhs: " <<  rhs << std::endl;
         } else {
             assert(false && "XOR clause must be at least 3 long");
         }
@@ -1013,9 +1022,9 @@ lbool Solver::solve_()
 
     if (verbosity >= 1){
         printf("============================[ Search Statistics ]==============================\n");
-        printf("| Conflicts |          ORIGINAL         |          LEARNT          | Progress |\n");
+        /*printf("| Conflicts |          ORIGINAL         |          LEARNT          | Progress |\n");
         printf("|           |    Vars  Clauses Literals |    Limit  Clauses Lit/Cl |          |\n");
-        printf("===============================================================================\n");
+        printf("===============================================================================\n");*/
     }
 
     // Search:
@@ -1053,6 +1062,7 @@ lbool Solver::solve_()
 
     int curr_restarts = 0;
     while (status == l_Undef){
+        cout << "claueses.size:" << clauses.size() << std::endl;
         clear_gauss();
         MatrixFinder mfinder(this);
         ok = mfinder.findMatrixes();

@@ -89,6 +89,7 @@ lbool miniSolver::solve_(const vector<Lit>& assumps, vector<Lit>& conflict,
 
   lbool val = Minisat::SimpSolver::solve_(false); //don't do simplification incrementally. 
   in2ex(Minisat::SimpSolver::conflict.toVec(), conflict);
+  Minisat::Solver::printStats();
   return val;
 }
 

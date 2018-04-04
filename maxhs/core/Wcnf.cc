@@ -614,29 +614,31 @@ Packed_vecs<Lit> Wcnf::reduce_by_units(Packed_vecs<Lit>& cls, miniSolver& sat_so
   size_t j = 0;
   vector<Lit> c;
   for(size_t i = 0; i < cls.size(); i++) {
-    assert(!cls[i].is_xor());
-
-    c.clear();
-    bool isSat {false};
-    for(auto l : cls[i]) 
-      if(sat_solver.curVal(l) == l_Undef)
-        c.push_back(l);
-      else if(sat_solver.curVal(l) == l_True) {
-        isSat = true;
-        break;
-      }
-    if(isSat)
-      continue;
-    else if(c.empty()) {
-      if(!softs)
-        //empty hards should be caught when clauses added to sat solver.
-        cout << "c ERROR: Wcnf::reduce_by_units found empty hard clause\n";
-      base_cost += soft_clswts[i];
-    }
-    else if(softs || c.size() > 1) {
-      tmp.addVec(c); 
-      if(softs) 
-        soft_clswts[j++] = soft_clswts[i];
+    if (cls[i].is_xor()) {
+        c.clear();
+        bool isSat {false};
+        for(auto l : cls[i])
+          if(sat_solver.curVal(l) == l_Undef)
+            c.push_back(l);
+          else if(sat_solver.curVal(l) == l_True) {
+            isSat = true;
+            break;
+          }
+        if(isSat)
+          continue;
+        else if(c.empty()) {
+          if(!softs)
+            //empty hards should be caught when clauses added to sat solver.
+            cout << "c ERROR: Wcnf::reduce_by_units found empty hard clause\n";
+          base_cost += soft_clswts[i];
+        }
+        else if(softs || c.size() > 1) {
+          tmp.addVec(c);
+          if(softs)
+            soft_clswts[j++] = soft_clswts[i];
+        }
+    } else {
+        //nothing to do here actually
     }
   }
   if(softs) {
@@ -663,6 +665,8 @@ void Wcnf::remDupCls() {
   Packed_vecs<Lit> tmpH, tmpS;
   vector<Weight> tmp_wts;
 
+  assert(false && "Below is definitely wrong for XOR");
+  exit(-1);
   for(size_t i=0; i < cdata.size(); i++) {
     if(cdata[i].w == 0)
       continue; //w==0 indicates clause is deleted;
@@ -791,13 +795,15 @@ void Wcnf::initClsData(vector<ClsData>& cdata) {
   //units are hashed as variables not as lits.
   for(size_t i = 0; i < nHards(); i++) 
     if(hardSize(i) == 1) {
+      assert(!hard_cls[i].is_xor());
       vector<Var> unit { var(hard_cls[i][0]) };
       cdata.emplace_back(static_cast<uint32_t>(i), 
                          hashCode(unit.begin(), unit.end()), -1, true);
     }
-    else 
+    else {
       cdata.emplace_back(static_cast<uint32_t>(i), 
                          hashCode(hard_cls[i].begin(), hard_cls[i].end()),-1, true);
+    }
 
   for(size_t i = 0; i < nSofts(); i++)
     if(softSize(i) == 1) {
