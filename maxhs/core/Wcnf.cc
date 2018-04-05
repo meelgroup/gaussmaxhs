@@ -665,25 +665,30 @@ void Wcnf::remDupCls() {
   Packed_vecs<Lit> tmpH, tmpS;
   vector<Weight> tmp_wts;
 
-  assert(false && "Below is definitely wrong for XOR");
-  exit(-1);
   for(size_t i=0; i < cdata.size(); i++) {
     if(cdata[i].w == 0)
       continue; //w==0 indicates clause is deleted;
+    if(cdata[i].w == -2)
+      continue; //w==0 indicates clause is xor
 
 
     uint32_t i_index { cdata[i].index };
     bool ihard { cdata[i].w < 0};
+    bool ixor  { cdata[i].w == -2};
     auto vi = ihard ? hard_cls[i_index] : soft_cls[i_index];
     for(size_t j=i+1; j < cdata.size() && cdata[i].hash==cdata[j].hash; j++) {
+      //deleted
       if(cdata[j].w == 0)
+        continue;
+      //xor
+      if(cdata[j].w == -2)
         continue;
 
       uint32_t j_index {cdata[j].index};
       bool jhard {cdata[j].w < 0};
+      bool jxor {cdata[j].w == -2};
       auto vj = jhard ? hard_cls[j_index] : soft_cls[j_index];
       if(vi.size() == 1 && vj.size() == 1 && vi[0] == ~vj[0]) { //contradictory units
-        //NOTE this actually works for XOR, weirdly enough
         if(ihard && jhard) {
           unsat = true;
           return;
@@ -793,17 +798,22 @@ bool Wcnf::eqVecs(const ClsData& a, const ClsData& b) {
 void Wcnf::initClsData(vector<ClsData>& cdata) {
   //auxilary function for rmDupcls.
   //units are hashed as variables not as lits.
-  for(size_t i = 0; i < nHards(); i++) 
+  for(size_t i = 0; i < nHards(); i++) {
+    int weight = -1;
+    if (hard_cls[i].is_xor())
+      weight = -2;
+
     if(hardSize(i) == 1) {
       assert(!hard_cls[i].is_xor());
       vector<Var> unit { var(hard_cls[i][0]) };
       cdata.emplace_back(static_cast<uint32_t>(i), 
-                         hashCode(unit.begin(), unit.end()), -1, true);
+                         hashCode(unit.begin(), unit.end()), weight, true);
     }
     else {
       cdata.emplace_back(static_cast<uint32_t>(i), 
-                         hashCode(hard_cls[i].begin(), hard_cls[i].end()),-1, true);
+                         hashCode(hard_cls[i].begin(), hard_cls[i].end()),weight, true);
     }
+  }
 
   for(size_t i = 0; i < nSofts(); i++)
     if(softSize(i) == 1) {

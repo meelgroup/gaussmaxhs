@@ -124,8 +124,6 @@ bool MaxSolver::doPreprocessing() {
   if(!params.preprocess)
     return false;
 
-  assert(false && "XOR may be an issue here");
-
   const int not_seen {0}, seen {1};
   int toBeFrozen {0}, totalVars {0};
   vector<char> varStatus(theWcnf->nVars(), not_seen);
