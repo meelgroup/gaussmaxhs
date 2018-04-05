@@ -30,6 +30,7 @@ usage = "usage: %prog [options] --fuzz/--regtest/--checkdir/filetocheck"
 desc = """Fuzz the solver with fuzz-generator: ./fuzz_test.py
 """
 
+
 def set_up_parser():
     parser = optparse.OptionParser(usage=usage, description=desc)
     parser.add_option("--numxors", metavar="NUMXORS", dest="numxors",
@@ -41,8 +42,10 @@ def set_up_parser():
 
     return parser
 
+
 parser = set_up_parser()
 (options, args) = parser.parse_args()
+
 
 def get_max_var(clause):
     maxvar = 0
@@ -61,6 +64,7 @@ def get_max_var(clause):
         maxvar = max(var, maxvar)
 
     return maxvar
+
 
 def get_stats(inlines):
     maxvar = 0
@@ -98,7 +102,7 @@ if __name__ == "__main__":
         mysplit = line.split()
         if len(mysplit) == 2:
             assert mysplit[1] == "0"
-            #unit clause, skip
+            # unit clause, skip
             continue
 
         inlines.append(line)
@@ -109,7 +113,9 @@ if __name__ == "__main__":
     if options.numxors == -1:
         options.numxors = int(numvars/2)
 
-    sys.stdout.write("p wcnf %d %d %d\n" % (numvars, numcls + numvars +options.numxors, 20))
+    sys.stdout.write("p wcnf %d %d %d\n" % (numvars,
+                                            numcls + numvars + options.numxors,
+                                            20))
     atvar = numvars
     for line in inlines:
         # skip empty line
@@ -124,14 +130,14 @@ if __name__ == "__main__":
             continue
 
         if len(line.split()) == 2:
-            #units are not supposed to be here
+            # units are not supposed to be here
             assert False
         else:
-            #non-unit, add hard weight
-            sys.stdout.write("%d %s\n" %(20, line))
+            # non-unit, add hard weight
+            sys.stdout.write("%d %s\n" % (20, line))
 
     for var in range(1, numvars+1):
-        sys.stdout.write("%d %d 0\n" %(1, var))
+        sys.stdout.write("%d %d 0\n" % (1, var))
 
     for _ in range(options.numxors):
         var_selection = []
@@ -140,4 +146,4 @@ if __name__ == "__main__":
                 var_selection.append(v)
         random.shuffle(var_selection)
         var_select_str = [str(x) for x in var_selection]
-        sys.stdout.write("x %d %s 0\n" %(20, " ".join(var_select_str)))
+        sys.stdout.write("x %d %s 0\n" % (20, " ".join(var_select_str)))

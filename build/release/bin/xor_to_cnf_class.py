@@ -18,12 +18,18 @@
 
 from __future__ import print_function
 import re
+import fileinput
+import sys
 
 
 class XorToCNF:
     def __init__(self):
         self.cutsize = 4
         self.wcnf = -1
+        self.inlines = []
+        for line in fileinput.input():
+            line = line.strip()
+            self.inlines.append(line)
 
     def get_max_var(self, clause):
         maxvar = 0
@@ -46,23 +52,19 @@ class XorToCNF:
 
         return maxvar
 
-    def convert(self, infilename, outfilename):
+    def convert(self):
         assert isinstance(self.cutsize, int)
         if self.cutsize <= 2:
             print("ERROR: The cut size MUST be larger or equal to 3")
             exit(-1)
 
-        maxvar, numcls, extravars_needed, extracls_needed = self.get_stats(infilename)
-        fout = open(outfilename, "w")
+        maxvar, numcls, extravars_needed, extracls_needed = self.get_stats()
         if self.wcnf >= 0:
-            fout.write("p wcnf %d %d %d\n" % (maxvar + extravars_needed, numcls + extracls_needed, self.wcnf))
+            sys.stdout.write("p wcnf %d %d %d\n" % (maxvar + extravars_needed, numcls + extracls_needed, self.wcnf))
         else:
-            fout.write("p cnf %d %d\n" % (maxvar + extravars_needed, numcls + extracls_needed))
-        fin = open(infilename, "r")
+            sys.stdout..write("p cnf %d %d\n" % (maxvar + extravars_needed, numcls + extracls_needed))
         atvar = maxvar
-        for line in fin:
-            line = line.strip()
-
+        for line in self.inlines:
             # skip empty line
             if len(line) == 0:
                 continue
@@ -74,20 +76,18 @@ class XorToCNF:
             if line[0] == 'x':
                 if self.wcnf >= 0:
                     # we also leave in the XOR
-                    fout.write(line + "\n")
+                    sys.stdout.write(line + "\n")
                 # convert XOR to normal(s)
                 xorclauses, atvar = self.cut_up_xor_to_n(line, atvar)
                 for xorcl in xorclauses:
                     cls = self.xor_to_cnf_simple(xorcl)
                     for cl in cls:
-                        fout.write(cl + "\n")
+                        sys.stdout.write(cl + "\n")
             else:
                 # simply print normal clause
-                fout.write(line + "\n")
+                sys.stdout.write(line + "\n")
 
         assert atvar == maxvar + extravars_needed
-        fout.close()
-        fin.close()
 
     def popcount(self, x):
         return bin(x).count('1')
@@ -152,7 +152,7 @@ class XorToCNF:
         if len(lits) <= self.cutsize:
             retcl = "x"
             if self.wcnf >= 0:
-                retcl +=" %d " % weight
+                retcl += " %d " % weight
             for lit in lits:
                 retcl += "%d " % lit
             retcl += "0"
@@ -171,7 +171,7 @@ class XorToCNF:
 
             thisxor = "x"
             if self.wcnf >= 0:
-                thisxor +=" %d " % weight
+                thisxor += " %d " % weight
             for i2 in range(at, until):
                 thisxor += "%d " % lits[i2]
 
@@ -225,14 +225,12 @@ class XorToCNF:
 
         return [varsneeded, clsneeded]
 
-    def get_stats(self, infilename):
-        infile = open(infilename, "r")
-
+    def get_stats(self):
         maxvar = 0
         numcls = 0
         extravars_needed = 0
         extracls_needed = 0
-        for line in infile:
+        for line in self.inlines:
             line = line.strip()
 
             # empty line, skip
@@ -260,7 +258,5 @@ class XorToCNF:
                     extracls_needed += 1
             else:
                 numcls += 1
-
-        infile.close()
 
         return [maxvar, numcls, extravars_needed, extracls_needed]
