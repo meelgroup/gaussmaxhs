@@ -23,6 +23,26 @@ import optparse
 from xor_to_cnf_class import *
 import sys
 import fileinput
+import optparse
+import random
+
+usage = "usage: %prog [options] --fuzz/--regtest/--checkdir/filetocheck"
+desc = """Fuzz the solver with fuzz-generator: ./fuzz_test.py
+"""
+
+def set_up_parser():
+    parser = optparse.OptionParser(usage=usage, description=desc)
+    parser.add_option("--numxors", metavar="NUMXORS", dest="numxors",
+                      type=int, default=-1,
+                      help="Number of XORs to add. Default: num vars/2")
+
+    parser.add_option("--verbose", "-v", action="store_true", default=False,
+                      dest="verbose", help="Print more output")
+
+    return parser
+
+parser = set_up_parser()
+(options, args) = parser.parse_args()
 
 def get_max_var(clause):
     maxvar = 0
@@ -86,7 +106,10 @@ if __name__ == "__main__":
     numvars, numcls = get_stats(inlines)
     numcls += numvars
 
-    sys.stdout.write("p wcnf %d %d %d\n" % (numvars, numcls + numvars, 20))
+    if options.numxors == -1:
+        options.numxors = int(numvars/2)
+
+    sys.stdout.write("p wcnf %d %d %d\n" % (numvars, numcls + numvars +options.numxors, 20))
     atvar = numvars
     for line in inlines:
         # skip empty line
@@ -109,3 +132,12 @@ if __name__ == "__main__":
 
     for var in range(1, numvars+1):
         sys.stdout.write("%d %d 0\n" %(1, var))
+
+    for _ in range(options.numxors):
+        var_selection = []
+        for v in range(1, numvars+1):
+            if random.choice([True, False]):
+                var_selection.append(v)
+        random.shuffle(var_selection)
+        var_select_str = [str(x) for x in var_selection]
+        sys.stdout.write("x %d %s 0\n" %(20, " ".join(var_select_str)))
