@@ -62,7 +62,7 @@ class XorToCNF:
         if self.wcnf >= 0:
             sys.stdout.write("p wcnf %d %d %d\n" % (maxvar + extravars_needed, numcls + extracls_needed, self.wcnf))
         else:
-            sys.stdout..write("p cnf %d %d\n" % (maxvar + extravars_needed, numcls + extracls_needed))
+            sys.stdout.write("p cnf %d %d\n" % (maxvar + extravars_needed, numcls + extracls_needed))
         atvar = maxvar
         for line in self.inlines:
             # skip empty line
