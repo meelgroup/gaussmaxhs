@@ -35,7 +35,7 @@ def set_up_parser():
     parser = optparse.OptionParser(usage=usage, description=desc)
     parser.add_option("--numxors", metavar="NUMXORS", dest="numxors",
                       type=int, default=-1,
-                      help="Number of XORs to add. Default: num vars/2")
+                      help="Number of XORs to add. Default: num vars/2 but max 50")
 
     parser.add_option("--verbose", "-v", action="store_true", default=False,
                       dest="verbose", help="Print more output")
@@ -112,6 +112,7 @@ if __name__ == "__main__":
 
     if options.numxors == -1:
         options.numxors = int(numvars/2)
+        options.numxors = min(options.numxors, 50)
 
     sys.stdout.write("p wcnf %d %d %d\n" % (numvars,
                                             numcls + numvars + options.numxors,
@@ -141,7 +142,7 @@ if __name__ == "__main__":
 
     for _ in range(options.numxors):
         var_selection = []
-        for v in range(1, numvars+1):
+        for v in range(1, min(numvars+1, 50)):
             if random.choice([True, False]):
                 var_selection.append(v)
         random.shuffle(var_selection)

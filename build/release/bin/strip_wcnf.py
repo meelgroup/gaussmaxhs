@@ -26,8 +26,8 @@ import fileinput
 import optparse
 import random
 
-usage = "usage: %prog [options] --fuzz/--regtest/--checkdir/filetocheck"
-desc = """Fuzz the solver with fuzz-generator: ./fuzz_test.py
+usage = "usage: cat file | %prog [options] > outfile"
+desc = """Strip XORs from file. Can ALSO strip weights if set -s flag.
 """
 
 
@@ -35,12 +35,17 @@ def set_up_parser():
     parser = optparse.OptionParser(usage=usage, description=desc)
     parser.add_option("--verbose", "-v", action="store_true", default=False,
                       dest="verbose", help="Print more output")
+    parser.add_option("--xortoo", "-x", action="store_true", default=False,
+                      dest="strip_x", help="Strips XOR clauses from WCNF")
+    parser.add_option("--softtoo", "-s", action="store_true", default=False,
+                      dest="strip_s", help="Strips soft clauses and makes a normal CNF")
 
     return parser
 
 
 parser = set_up_parser()
 (options, args) = parser.parse_args()
+sys.argv = args
 
 
 def get_max_var(clause):
@@ -51,9 +56,11 @@ def get_max_var(clause):
         return 0
 
     assert re.search(r'^x? *-?\d+', tmp)
-    assert tmp[0] != 'x', "No XOR clauses here"
 
-    #first value is weight
+    if tmp[0] == 'x':
+        tmp = tmp[1:]
+
+    # first value is weight
     for lit in tmp.split()[1:]:
         var = abs(int(lit))
         maxvar = max(var, maxvar)
@@ -83,9 +90,6 @@ def get_stats(inlines):
         if line[0] == 'c':
             continue
 
-        if line[0] == 'x':
-            assert False, "XORs have been removed arlready"
-
         # get max var
         maxvar = max(get_max_var(line), maxvar)
         numcls += 1
@@ -98,7 +102,10 @@ if __name__ == "__main__":
     inlines = []
     for line in fileinput.input():
         line = line.strip()
-        if line[0] == 'x':
+        if line == "":
+            continue
+
+        if line[0] == 'x' and options.strip_x:
             # xor clause, skip
             continue
 
@@ -106,7 +113,10 @@ if __name__ == "__main__":
 
     numvars, numcls, weight = get_stats(inlines)
 
-    sys.stdout.write("p wcnf %d %d %d\n" % (numvars, numcls, weight))
+    if options.strip_s:
+        sys.stdout.write("p cnf %d %d\n" % (numvars, numcls))
+    else:
+        sys.stdout.write("p wcnf %d %d %d\n" % (numvars, numcls, weight))
     atvar = numvars
     for line in inlines:
         # skip empty line
@@ -120,4 +130,18 @@ if __name__ == "__main__":
         if line[0] == 'p':
             continue
 
-        sys.stdout.write("%s\n" % line)
+        if not options.strip_s:
+            sys.stdout.write("%s\n" % line)
+        else:
+            is_xor = False
+            line = line.split()
+            if line[0] == 'x':
+                is_xor = True
+                line = line[1:]
+
+            w = int(line[0])
+            if w >= weight:
+                if is_xor:
+                    sys.stdout.write("x ")
+                sys.stdout.write("%s\n" % " ".join(line[1:]))
+
