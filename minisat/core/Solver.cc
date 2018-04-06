@@ -911,8 +911,8 @@ lbool Solver::search(int nof_conflicts)
                                 }
                             } else {
                                 uncheckedEnqueue(lit);
+                                goto prop;
                             }
-                            goto prop;
                         }
                         goto confl;
                     }
