@@ -7,12 +7,12 @@ class GaussConf
     public:
 
     GaussConf() :
-        only_nth_gauss_save(2)
-        , decision_until(700)
+        only_nth_gauss_save(10)
+        , decision_until(1700)
         , autodisable(true)
         , iterativeReduce(true)
-        , max_matrix_rows(800)
-        , min_matrix_rows(15)
+        , max_matrix_rows(1500)
+        , min_matrix_rows(5)
         , max_num_matrixes(2)
     {
     }
