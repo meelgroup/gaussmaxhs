@@ -304,13 +304,6 @@ void Gaussian::fill_matrix(matrixset& origMat)
         //Used with check_gauss.py
         cout << "x " << x << endl;
         #endif
-        #ifdef DEBUG_GAUSS
-        for(const Xor& x: xors) {
-            for(uint32_t v: x) {
-                assert(solver->varData[v].removed == Removed::none);
-            }
-        }
-        #endif
 
         origMat.matrix.getVarsetAt(matrix_row).set(x, var_to_col, origMat.num_cols);
         origMat.matrix.getMatrixAt(matrix_row).set(x, var_to_col, origMat.num_cols);
@@ -726,9 +719,11 @@ Gaussian::gaussian_ret Gaussian::handle_matrix_confl(
     #ifdef VERBOSE_DEBUG
     const bool rhs = m.matrix.getVarsetAt(best_row).rhs();
     //Used with check_gauss.py
-    cout << "(" << matrix_no << ") confl clause: "
-    << tmp_clause << " , "
-    << "rhs:" << rhs << endl;
+    cout << "(" << matrix_no << ") confl clause: ";
+    for(int i = 0; i < tmp_clause.size(); i++) {
+        cout << (sign(tmp_clause[i]) ? "-":"")  << var(tmp_clause[i]) +1 << " ";
+    }
+    cout << " -- rhs:" << rhs << endl;
     #endif
 
     if (tmp_clause.size() == 0) {
@@ -926,12 +921,6 @@ Gaussian::gaussian_ret Gaussian::handle_matrix_prop(matrixset& m, const uint32_t
     cout << "(" << matrix_no << ") prop clause: "
     << tmp_clause << " , "
     << "rhs:" << m.matrix.getVarsetAt(row).rhs() << endl;
-    cout << "varData [0]:" << removed_type_to_string(solver->varData[tmp_clause[0].var()].removed) << endl;
-    #endif
-    #ifdef DEBUG_GAUSS
-    for(Lit l: tmp_clause) {
-        assert(solver->varData[l.var()].removed == Removed::none);
-    }
     #endif
 
     switch(tmp_clause.size()) {
