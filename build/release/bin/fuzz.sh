@@ -4,7 +4,7 @@ set -e
 
 echo "called with seed $1"
 ./cnf-fuzz-brummayer.py $1 | grep -v "^c " > in_cnf
-cat in_cnf | ./cnf_to_wcnf.py > in_wcnf_xor
+cat in_cnf | ./cnf_to_wcnf_and_xors.py > in_wcnf_xor
 cat in_wcnf_xor | ./xor_to_cnf.py > in_wcnf_xor_blasted
 echo ./maxhs in_wcnf_xor_blasted
 cat in_wcnf_xor_blasted | ./strip_wcnf.py -s strip_wcnf.py > in_cnf_xors
