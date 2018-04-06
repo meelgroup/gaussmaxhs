@@ -80,11 +80,11 @@ int main(int argc, char** argv) {
     cout << "c ============================================\n";
     cout << "c\n";
 
-    signal(SIGINT, SIGINT_exit);
+    /*signal(SIGINT, SIGINT_exit);
     signal(SIGXCPU, SIGINT_exit);
     signal(SIGSEGV, SIGINT_exit);
     signal(SIGTERM, SIGINT_exit);
-    signal(SIGABRT, SIGINT_exit);
+    signal(SIGABRT, SIGINT_exit);*/
     
     if (cpu_lim != INT32_MAX){
       rlimit rl;
