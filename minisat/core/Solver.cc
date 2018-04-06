@@ -894,9 +894,28 @@ lbool Solver::search(int nof_conflicts)
                         break;
                     case gauss_false:
                         return l_False;
-                    case gauss_confl:
+                    case gauss_confl: {
                         confl = g->found_conflict;
+                        const Clause& c = ca[confl];
+                        if (c.size() == 0) {
+                            ok = false;
+                            return l_False;
+                        } else if (c.size() == 1) {
+                            Lit lit = c[0];
+                            cancelUntil(0);
+                            if (value(lit) != l_Undef) {
+                                lbool value_should_be = sign(lit) ? l_False : l_True;
+                                if (value(lit) != value_should_be) {
+                                    ok = false;
+                                    return l_False;
+                                }
+                            } else {
+                                uncheckedEnqueue(lit);
+                            }
+                            goto prop;
+                        }
                         goto confl;
+                    }
                     case gauss_nothing:
                         ;
                 }
