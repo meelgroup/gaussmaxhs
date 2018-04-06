@@ -237,7 +237,7 @@ uint32_t Gaussian::select_columnorder(
     var_to_col.resize(largest_used_var + 1);
     var_is_in.setZero();
     var_is_in.resize(var_to_col.size(), 0);
-    origMat.col_is_set.resize(origMat.num_cols, false);
+    origMat.col_is_set.resize(vars_needed.size(), false);
 
     origMat.col_to_var.clear();
     //TODO
