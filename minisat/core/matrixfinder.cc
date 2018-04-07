@@ -103,7 +103,7 @@ bool MatrixFinder::findMatrixes()
     matrix_no = 0;
     double myTime = cpuTime();
 
-    cout << "solver->xorclauses.size(): " << solver->xorclauses.size() << endl;
+    //cout << "solver->xorclauses.size(): " << solver->xorclauses.size() << endl;
     if (solver->xorclauses.size() < solver->gaussconf.min_gauss_xor_clauses
         || solver->gaussconf.decision_until <= 0
     ) {

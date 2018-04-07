@@ -111,8 +111,8 @@ if __name__ == "__main__":
     numcls += numvars
 
     if options.numxors == -1:
-        options.numxors = int(numvars/2)
-        options.numxors = min(options.numxors, 50)
+        options.numxors = min(int(numvars/2), 20)
+        options.numxors = min(options.numxors, 20)
 
     sys.stdout.write("p wcnf %d %d %d\n" % (numvars,
                                             numcls + numvars + options.numxors,

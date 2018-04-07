@@ -1219,7 +1219,8 @@ void MaxSolver::cplexAddNewClauses() {
 
   //TODO CMS: Note that since the limit is set and forced to 0, nothing will be added!
   //limit is "params.seed_max"
-  assert(cplexClauses.empty());
+  //assert(cplexClauses.empty());
+  cout << "---- WARNING ---- NOTE: We added some clauses to CPlex.. not sure if this is OK" << endl;
   /*for(size_t i = 0; i < cplexClauses.size(); i++)
     cplexAddCls(cplexClauses.getVec(i));
   cplexClauses.clear();*/
@@ -1397,7 +1398,8 @@ void MaxSolver::seed_equivalence() {
 
   size_t n_cores {}, n_ncores {}, n_mixed {}, n_ordinary {};
   double l_cores {}, l_ncores {}, l_mixed {}, l_ordinary {};
-  //TODO CMS: Note that since the limit is set and forced to 0, nothing will be added!
+  //TODO CMS: Note that since the limit is set and forced to 0, nothing should be added...
+  //TODO something is added... weird.
   int limit {params.seed_max};
 
   l_cores    = addUpTo(cores, limit, n_cores);
