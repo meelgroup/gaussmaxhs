@@ -368,7 +368,7 @@ bool miniSolver::addXorClause(const vector<Lit>& lts)
 {
   vec<Lit> ps;
   for(auto lt: lts) {
-    freezeVar(var(ex2in(lt)));
+    freezeVar(var(lt));
     ensure_mapping(lt);
     if(isEliminated(var(ex2in(lt)))) {
       ps.clear();
