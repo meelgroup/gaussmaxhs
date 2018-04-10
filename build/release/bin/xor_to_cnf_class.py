@@ -93,7 +93,7 @@ class XorToCNF:
         return bin(x).count('1')
 
     def parse_xor(self, xorclause):
-        assert re.search(r'^x( *-?\d+ )*0$', xorclause)
+        assert re.search(r'^x( *-?\d+ +)* *0$', xorclause)
 
         tmp = xorclause[1:]
         lits = [int(elem) for elem in tmp.split()]
