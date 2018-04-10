@@ -1374,8 +1374,14 @@ bool Solver::clean_one_xor(Xor& x)
             return false;
         }
         case 2: {
-            assert(false);
-            //add_xor_clause_inter(vars_to_lits(x), x.rhs, true);
+            vec<Lit> lits;
+            lits.push(mkLit(x[0], false));
+            lits.push(mkLit(x[1], true ^ x.rhs));
+            addClause(lits);
+            lits.clear();
+            lits.push(mkLit(x[0], true));
+            lits.push(mkLit(x[1], false ^ x.rhs));
+            addClause(lits);
             return false;
         }
         default: {

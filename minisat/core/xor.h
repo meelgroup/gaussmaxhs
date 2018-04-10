@@ -114,16 +114,6 @@ private:
     vector<uint32_t> vars;
 };
 
-template<typename T>
-inline vector<Lit> vars_to_lits(const T& vars)
-{
-    vector<Lit> ret;
-    for(uint32_t var: vars) {
-        ret.push_back(Lit(var, false));
-    }
-    return ret;
-}
-
 // inline std::ostream& operator<<(std::ostream& os, const Xor& thisXor)
 // {
 //     for (uint32_t i = 0; i < thisXor.size(); i++) {
