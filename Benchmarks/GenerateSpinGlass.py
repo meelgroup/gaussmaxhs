@@ -52,7 +52,7 @@ def GenerateCNF(gridSize, c, roundDigits, outputFile):
     topWeight += 1
 
     # Adding XORs
-    for _ in range(1):
+    for _ in range(7):
         writeStr += "x %d " % (topWeight)
         for i in range(1, numVars + 1):
             if random.choice([True, False]):
