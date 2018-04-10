@@ -3,13 +3,13 @@ import os
 import argparse
 import random
 
-def GenerateCNF(gridSize,c,roundDigits,outputFile):
+def GenerateCNF(gridSize, c,roundDigits, outputFile):
     numVars = gridSize*gridSize
     numClauses = 0
     topWeight = 0
     writeStr = ''
-    #writeStr = 'p wcnf '+str(numVars)+' '+str(numClauses)+' 1 \n'
-    #Adding weights for each vars own state
+    # writeStr = 'p wcnf '+str(numVars)+' '+str(numClauses)+' 1 \n'
+    # Adding weights for each vars own state
     for i in range(1, numVars+1):
         weight = int(round(random.uniform(-1,1),roundDigits)*pow(10,roundDigits))
         if (weight > 0):
@@ -18,16 +18,16 @@ def GenerateCNF(gridSize,c,roundDigits,outputFile):
         else:
             writeStr += str(-weight)+' '+str(-i)+' 0\n'
         numClauses += 1
-    #Adding clauses for pairwise interaction of horizontal edges
+    # Adding clauses for pairwise interaction of horizontal edges
     for i in range(1,gridSize):
         for j in range(1, gridSize):
             weight = int(round(random.uniform(0,c),roundDigits)*pow(10,roundDigits))
             topWeight += weight
-            writeStr += str(weight)+' '+str(i*gridSize+j)+' '+str(i*gridSize+j+1)+ '0 \n'
+            writeStr += str(weight)+' '+str(i*gridSize+j)+' '+str(i*gridSize+j+1)+' 0 \n'
             numClauses += 1
             writeStr += str(weight)+' '+str(-(i*gridSize+j))+' '+str(-(i*gridSize+j+1))+' 0\n'
             numClauses += 1
-    #Adding clauses for pairwise interaction of veritical edges
+    # Adding clauses for pairwise interaction of veritical edges
     for i in range(1, gridSize):
         for j in range(1,gridSize):
             weight = int(round(random.uniform(0,c),roundDigits)*pow(10,roundDigits))
@@ -39,9 +39,11 @@ def GenerateCNF(gridSize,c,roundDigits,outputFile):
     topWeight += 1
     header = 'p wcnf '+str(numVars)+' '+str(numClauses)+' '+str(topWeight)+'\n'
     writeStr = header + writeStr
-    f = open(outputFile,'w')
+    f = open(outputFile, 'w')
     f.write(writeStr)
     f.close()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", help="seed for random engine", type=int, default=1)
@@ -60,7 +62,5 @@ def main():
         index += 1
         c = i*1.0/10
         GenerateCNF(gridSize,c,roundDigits, outputFile+"_"+str(index)+".grid")
-        
-
 
 main()
