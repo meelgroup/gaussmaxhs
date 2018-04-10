@@ -18,16 +18,22 @@ echo "diff -y  in_wcnf_xor in_wcnf_xor_blasted | colordiff | less -R"
 echo "diff -y  in_cnf in_cnf_xors  | colordiff | less -R"
 echo "diff -y  in_cnf in_cnf_blastedxors  | colordiff | less -R"
 
-echo "EXEC!"
+
+echo "EXEC! with t-out"
+(
+ulimit -t 30
 echo "-> orig"
 echo "./maxhs_orig in_wcnf_xor_blasted_nox > res${1}.orig.out"
 ./maxhs_orig in_wcnf_xor_blasted_nox > res${1}.orig.out
 grep "UNSAT" res${1}.orig.out
 grep "^o " res${1}.orig.out
+)
 
+(
+ulimit -t 30
 echo "-> new"
-echo "./maxhs in_wcnf_xor_blasted_nox > res${1}.new.out"
-./maxhs in_wcnf_xor_blasted_nox > res${1}.new.out
+echo "./maxhs in_wcnf_xor_blasted > res${1}.new.out"
+./maxhs in_wcnf_xor_blasted > res${1}.new.out
 grep "UNSAT" res${1}.new.out
 grep "^o " res${1}.new.out
-
+)
