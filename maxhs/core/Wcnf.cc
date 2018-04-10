@@ -614,7 +614,9 @@ Packed_vecs<Lit> Wcnf::reduce_by_units(Packed_vecs<Lit>& cls, miniSolver& sat_so
   size_t j = 0;
   vector<Lit> c;
   for(size_t i = 0; i < cls.size(); i++) {
-    if (cls[i].is_xor()) {
+    //TODO CMS check!
+    cout << "COULD BE BUGGY HERE!!!" << std::endl;
+    if (!cls[i].is_xor()) {
         c.clear();
         bool isSat {false};
         for(auto l : cls[i])

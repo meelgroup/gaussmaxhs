@@ -1221,9 +1221,14 @@ void MaxSolver::cplexAddNewClauses() {
   //limit is "params.seed_max"
   //assert(cplexClauses.empty());
   cout << "---- WARNING ---- NOTE: We added some clauses to CPlex.. not sure if this is OK" << endl;
-  /*for(size_t i = 0; i < cplexClauses.size(); i++)
-    cplexAddCls(cplexClauses.getVec(i));
-  cplexClauses.clear();*/
+  for(size_t i = 0; i < cplexClauses.size(); i++) {
+    bool is_xor = false;
+    vector<Lit> lits = cplexClauses.getVec(i, is_xor);
+    if (!is_xor) {
+        cplexAddCls(vector<Lit>(lits));
+    }
+  }
+  cplexClauses.clear();
 }
 
 void MaxSolver::greedyAddNewClauses() {
@@ -1281,7 +1286,6 @@ void MaxSolver::processMutexes() {
 }
 
 void MaxSolver::seed_equivalence() {
-    assert(false && "This does NOT work with XOR");
   /*find clauses that can be feed into CPLEX.
 
     If number of vars < params.seed_all_limit give CPLEX all clauses.

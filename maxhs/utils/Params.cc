@@ -80,7 +80,7 @@ static BoolOption opt_seed_learnts(seed, "seed-learnts", "FB: seed any learnts a
 
 static IntOption  opt_coretype(maxhs, "coretype", "JD: Type of constraints to learn and"
 			       " feed to CPLEX (0 = core constraints only) (1 = mixed constraints).", 0, IntRange(0,1));
-static IntOption   opt_seedtype(seed, "seedtype", "FB: Type of seeded constraints allowed, 0 = no seeding, 1 = cores only, 2 = also allow non-cores, 3 = also allow mixed constraints", 0,
+static IntOption   opt_seedtype(seed, "seedtype", "FB: Type of seeded constraints allowed, 0 = no seeding, 1 = cores only, 2 = also allow non-cores, 3 = also allow mixed constraints", 3,
 				IntRange(0,3));
 static IntOption    opt_maxseeds(seed, "seed-max", "FB: maximum number of seeded constraints", 1024*512, 
 				 IntRange(0, std::numeric_limits<int>::max()));
