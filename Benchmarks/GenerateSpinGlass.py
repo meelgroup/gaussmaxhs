@@ -12,7 +12,7 @@ def GenerateCNF(gridSize, c, roundDigits, outputFile):
     numClauses = 0
     topWeight = 0
     writeStr = ''
-    # writeStr = 'p wcnf '+str(numVars)+' '+str(numClauses)+' 1 \n'
+
     # Adding weights for each vars own state
     for i in range(1, numVars + 1):
         weight = int(round(random.uniform(-1, 1), roundDigits)
@@ -50,6 +50,16 @@ def GenerateCNF(gridSize, c, roundDigits, outputFile):
                 ' ' + str(-(i * gridSize + j + gridSize)) + ' 0\n'
             numClauses += 1
     topWeight += 1
+
+    # Adding XORs
+    for _ in range(1):
+        writeStr += "x %d " % (topWeight)
+        for i in range(1, numVars + 1):
+            if random.choice([True, False]):
+                writeStr += "%d " % i
+        writeStr += "0\n"
+        numClauses += 1
+
     header = 'p wcnf ' + str(numVars) + ' ' + \
         str(numClauses) + ' ' + str(topWeight) + '\n'
     writeStr = header + writeStr
@@ -60,19 +70,22 @@ def GenerateCNF(gridSize, c, roundDigits, outputFile):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--seed", help="seed for random engine", type=int, default=1)
+    parser.add_argument("--seed", help="seed for random engine", type=int,
+                        default=1)
     parser.add_argument("--output", help="output file prefix", default="log")
-    parser.add_argument(
-        "--crange", help="range for coupling parameters", type=int, default=3)
+    parser.add_argument("--crange", help="range for coupling parameters",
+                        type=int, default=3)
     parser.add_argument(
         "--roundDigits",
         help="number of digits weight function should be rounded", type=int,
         default=3)
     parser.add_argument("--gridSize", help="Grid Size", type=int, default=7)
+
     args = parser.parse_args()
     random.seed(args.seed)
+    print("seed:", args.seed)
     outputFile = args.output
+    print("output:", args.output)
     crange = args.crange
     gridSize = args.gridSize
     roundDigits = args.roundDigits
