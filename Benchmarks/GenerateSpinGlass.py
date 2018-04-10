@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2018 Kuldeep S. Meel
 
 import argparse
 import random
