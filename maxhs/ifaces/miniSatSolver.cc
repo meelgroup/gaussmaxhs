@@ -377,12 +377,12 @@ bool miniSolver::addXorClause(const vector<Lit>& lts)
     ps.push(ex2in(lt));
   }
 
-  //DEBUG
-  cout << "mini XOR addCls: ext=" << lts << " int=" << ps << "\n";
-  if(ps.size()>0)
+  if(ps.size()>0) {
     return Minisat::SimpSolver::addXorClause(ps);
-  else
+  } else {
+    assert(false && "We should not be here... empty XOR?");
     return true;
+  }
 
   return true;
 }
