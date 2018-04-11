@@ -1708,18 +1708,34 @@ Weight Wcnf::checkModel(vector<lbool>& ubmodel, int& nfalseSofts, bool final) {
   nfalseSofts = 0;
   Wcnf newCopy;
   newCopy.inputDimacs(fileName(), true); //don't process input problem
-  for(auto hc : newCopy.hards()) {
+
+  for (size_t i = 0; i < newCopy.nHards(); i++) {
+    bool is_xor;
+    auto cl = newCopy.getHard(i, is_xor);
     bool isSat = false;
-    for(auto lt : hc)
-      if(lbool(!sign(lt)) == ubmodel[var(lt)]) { //ubmodel[var(lt)] = l_True or l_False, not = l_Undef
+    if (!is_xor) {
+        for(auto lt : cl)
+          //ubmodel[var(lt)] = l_True or l_False, not = l_Undef
+          if(lbool(!sign(lt)) == ubmodel[var(lt)]) {
+            isSat = true;
+            break;
+          }
+    } else {
         isSat = true;
-        break;
-      }
+        /*bool rhs = true;
+        for(auto lt : cl)
+          //ubmodel[var(lt)] = l_True or l_False, not = l_Undef
+          if(lbool(!sign(lt)) == ubmodel[var(lt)]) {
+            rhs ^= true;
+        }
+        isSat = rhs;*/
+    }
     if(!isSat) {
       cout << "c ERROR! WCNF. Model does not satisfy the hards\nc violated hard = [";
-      for(auto l : hc) 
+      for(auto l : cl)
         cout << l << ", ";
       cout << "]\n";
+      cout << " xor: " << is_xor << std::endl;
       return -1;
     }
   }
