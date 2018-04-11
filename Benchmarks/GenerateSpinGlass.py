@@ -52,7 +52,7 @@ def GenerateCNF(gridSize, c, roundDigits, outputFile):
     topWeight += 1
 
     # Adding XORs
-    for _ in range(7):
+    for _ in range(args.xors):
         writeStr += "x %d " % (topWeight)
         for i in range(1, numVars + 1):
             if random.choice([True, False]):
@@ -73,6 +73,8 @@ if __name__ == "__main__":
     parser.add_argument("--seed", help="seed for random engine", type=int,
                         default=1)
     parser.add_argument("--output", help="output file prefix", default="log")
+    parser.add_argument("--xors", help="num xors to add", default="xors",
+                        type=int)
     parser.add_argument("--crange", help="range for coupling parameters",
                         type=int, default=3)
     parser.add_argument(

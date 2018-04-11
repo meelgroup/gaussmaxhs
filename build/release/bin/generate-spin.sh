@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-./GenerateSpinGlass.py --seed $1 --output x
+./GenerateSpinGlass.py --seed $1 --xors $2 --output x
 
 totalorig=0
 totalnew=0
