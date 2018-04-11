@@ -7,6 +7,7 @@ totalorig=0
 totalnew=0
 for x in {2..15}; do
     f="x_${x}.grid"
+    echo "----------------"
     echo "Converting $f"
     cat $f | ./xor_to_cnf.py > ${f}_wcnf_xor_blasted
 
@@ -15,7 +16,8 @@ for x in {2..15}; do
 
     echo "running $f"
     (
-    ulimit -t 20
+    rm outorig
+    ulimit -t 40
     echo "./maxhs_orig ${f}_wcnf_xor_blasted_nox > outorig"
     /usr/bin/time --verbose -o tmp ./maxhs_orig ${f}_wcnf_xor_blasted_nox > outorig
     grep UNSAT outorig || true
@@ -26,7 +28,8 @@ for x in {2..15}; do
     origtime=$(grep "User time" tmp | cut -d " " -f 4)
 
     (
-    ulimit -t 20
+    rm out
+    ulimit -t 40
     echo "./maxhs ${f}_wcnf_xor_blasted > out"
     /usr/bin/time --verbose -o tmp ./maxhs ${f}_wcnf_xor_blasted > out
     grep UNSAT out || true
