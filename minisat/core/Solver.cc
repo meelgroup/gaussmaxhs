@@ -1041,7 +1041,7 @@ lbool Solver::solve_()
 
 
     if (verbosity >= 1){
-        printf("============================[ Search Statistics ]==============================\n");
+        printf("=========== Search stats -- solver %-7p vars: %-7d xcls: %-7d cls: %-7d\n", this, nVars(), xorclauses.size(), nClauses());
         /*printf("| Conflicts |          ORIGINAL         |          LEARNT          | Progress |\n");
         printf("|           |    Vars  Clauses Literals |    Limit  Clauses Lit/Cl |          |\n");
         printf("===============================================================================\n");*/

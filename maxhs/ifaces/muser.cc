@@ -45,18 +45,29 @@ Muser::Muser(const Wcnf* f, Bvars& b):
   vec<Lit> ps;
   int nHards {0};
 
-  for(auto hc : theWcnf->hards()) {
+  for (size_t i = 0; i < theWcnf->nHards(); i++) {
+    bool is_xor;
+    auto cl = theWcnf->getHard(i, is_xor);
     ps.clear();
     nHards++;
-    for(auto lt: hc) {
+    for(auto lt: cl) {
       ensure_mapping(var(lt));
       ps.push(ex2in(lt));
     }
 
-    //cout << "Muser: adding hard clause " << ps << "\n";
+    if (!is_xor) {
+        if (!addClause_(ps)) {
+          cout << "c WARNING Adding Hard clauses to muser caused unsat.\n";
+          return;
+        }
+    } else {
+        if (!addXorClause_(ps)) {
+          cout << "c WARNING Adding Hard XOR clauses to muser caused unsat.\n";
+          return;
+        }
+    }
 
-    if(!addClause_(ps)) 
-      cout << "c WARNING Adding Hard clauses to muser caused unsat.\n";
+    //cout << "Muser: adding hard clause " << ps << "\n";
   }
   if(params.mverbosity > 0)
     cout << "c Muser added " << nHards << " hard clauses\n";
