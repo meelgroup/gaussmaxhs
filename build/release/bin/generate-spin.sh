@@ -27,7 +27,7 @@ echo "running $f"
 rm -f "${preset}.outorig"
 ulimit -t $tlimit
 ulimit -v $memlimit
-/usr/bin/time --verbose -o "${preset}.timeoutorig" ./maxhs_orig "${preset}_wcnf_xor_blasted_nox" > "${preset}.outorig"
+/usr/bin/time --verbose -o "${preset}.timeoutorig" ./maxhs_orig -verb=0 "${preset}_wcnf_xor_blasted_nox" > "${preset}.outorig"
 grep UNSAT "${preset}.outorig" || true
 orig=$(grep "^o " "${preset}.outorig")
 echo "$orig"
@@ -39,7 +39,7 @@ origtime=$(grep "User time" "${preset}.timeoutorig" | cut -d " " -f 4)
 rm -f "${preset}.outnew"
 ulimit -t $tlimit
 ulimit -v $memlimit
-/usr/bin/time --verbose -o "${preset}.timeoutnew" ./maxhs "${preset}_wcnf_xor_blasted" > "${preset}.outnew"
+/usr/bin/time --verbose -o "${preset}.timeoutnew" ./maxhs -verb=0  "${preset}_wcnf_xor_blasted" > "${preset}.outnew"
 grep UNSAT "${preset}.outnew" || true
 new=$(grep "^o " "${preset}.outnew")
 echo "$new"
