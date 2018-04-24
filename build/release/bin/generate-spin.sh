@@ -1,55 +1,63 @@
-#!/bin/sh
-set -e
+#!/bin/bash
 
-./GenerateSpinGlass.py --seed $1 --xors $2 --output x
+seed=$1
+x=$2
+numxors=$3
+tlimit=$4
+memlimit=$5
+echo "Seed: ${seed}   xors: ${numxors}"
+echo "tlimit: ${tlimit}  memlimit ${memlimit}"
+./GenerateSpinGlass.py --seed "${seed}" --xors "${numxors}" --output x
 
 totalorig=0
 totalnew=0
-for x in {2..15}; do
-    f="x_${x}.grid"
-    echo "----------------"
-    echo "Converting $f"
-    cat $f | ./xor_to_cnf.py > ${f}_wcnf_xor_blasted
 
-    # strip xor for orig maxhs
-    cat ${f}_wcnf_xor_blasted | ./strip_wcnf.py -x > ${f}_wcnf_xor_blasted_nox
+f="x_${x}.grid"
+preset="seed-${seed}-xors-${numxors}-${f}"
+mv ${f} "${preset}-orig"
+echo "----------------"
+echo "Converting $f"
+cat "${preset}-orig" | ./xor_to_cnf.py > "${preset}_wcnf_xor_blasted"
 
-    echo "running $f"
-    (
-    rm outorig
-    ulimit -t 40
-    echo "./maxhs_orig ${f}_wcnf_xor_blasted_nox > outorig"
-    /usr/bin/time --verbose -o tmp ./maxhs_orig ${f}_wcnf_xor_blasted_nox > outorig
-    grep UNSAT outorig || true
-    orig=$(grep "^o " outorig)
-    echo $orig
-    )
-    orig=$(grep "^o " outorig)
-    origtime=$(grep "User time" tmp | cut -d " " -f 4)
+# strip xor for orig maxhs
+cat ${preset}_wcnf_xor_blasted | ./strip_wcnf.py -x > "${preset}_wcnf_xor_blasted_nox"
 
-    (
-    rm out
-    ulimit -t 40
-    echo "./maxhs ${f}_wcnf_xor_blasted > out"
-    /usr/bin/time --verbose -o tmp ./maxhs ${f}_wcnf_xor_blasted > out
-    grep UNSAT out || true
-    new=$(grep "^o " out)
-    echo $new
-    )
-    new=$(grep "^o " out)
-    newtime=$(grep "User time" tmp | cut -d " " -f 4)
+echo "running $f"
+(
+rm -f "${preset}.outorig"
+ulimit -t $tlimit
+ulimit -v $memlimit
+/usr/bin/time --verbose -o "${preset}.timeoutorig" ./maxhs_orig "${preset}_wcnf_xor_blasted_nox" > "${preset}.outorig"
+grep UNSAT "${preset}.outorig" || true
+orig=$(grep "^o " "${preset}.outorig")
+echo "$orig"
+)
+orig=$(grep "^o " "${preset}.outorig")
+origtime=$(grep "User time" "${preset}.timeoutorig" | cut -d " " -f 4)
+
+(
+rm -f "${preset}.outnew"
+ulimit -t $tlimit
+ulimit -v $memlimit
+/usr/bin/time --verbose -o "${preset}.timeoutnew" ./maxhs "${preset}_wcnf_xor_blasted" > "${preset}.outnew"
+grep UNSAT "${preset}.outnew" || true
+new=$(grep "^o " "${preset}.outnew")
+echo "$new"
+)
+new=$(grep "^o " "${preset}.outnew")
+newtime=$(grep "User time" "${preset}.timeoutnew" | cut -d " " -f 4)
 
 
-    echo "orig vs new time: $origtime --- $newtime"
-    totalorig=$(echo "$totalorig + $origtime" | bc)
-    totalnew=$(echo "$totalnew + $newtime" | bc)
+echo "orig vs new time: $origtime --- $newtime"
+totalorig=$(echo "$totalorig + $origtime" | bc)
+totalnew=$(echo "$totalnew + $newtime" | bc)
 
-    if [ "$orig" == "$new" ]; then
-        echo "OK: $orig -- $new"
-    else
-        echo "ERRROR! Not the same result!"
-        exit -1
-    fi
-    echo "Total orig: $totalorig"
-    echo "Total new : $totalnew"
-done
+rm ${preset}_wcnf*
+
+if [ "$orig" == "$new" ]; then
+    echo "OK: $orig -- $new"
+else
+    echo "ERRROR! Not the same result!"
+fi
+echo "Total orig: $totalorig"
+echo "Total new : $totalnew"

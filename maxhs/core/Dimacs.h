@@ -106,7 +106,6 @@ static void readClause(B& in, vector<Lit>& lits, Weight &outW, bool& is_xor) {
   lits.clear();
 
   if (*in == 'x') {
-      cout << "IS XOR" << std::endl;
       is_xor = true;
       ++in;
   } else {
