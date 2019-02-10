@@ -6,6 +6,20 @@ set -x
 numxors=$1
 tlimit=$2
 memlimit=$3
+if [[ $numxors == "" ]]; then
+	echo "ERROR You must give number of XORs as 1st argument"
+	exit -1
+fi
+
+if [[ $tlimit == "" ]]; then
+	echo "ERROR You must give timeout as 2nd argument"
+	exit -1
+fi
+
+if [[ $memlimit == "" ]]; then
+	echo "ERROR You must give mem limit in kb as 3rd argument"
+	exit -1
+fi
 echo "xors: ${numxors}"
 echo "tlimit: ${tlimit}  memlimit ${memlimit}"
 
