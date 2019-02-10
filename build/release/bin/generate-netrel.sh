@@ -9,6 +9,7 @@ function compare_the_two
         rm -f "${preset}.outorig"
         ulimit -t "$tlimit"
         ulimit -v "$memlimit"
+        pwd
         /usr/bin/time --verbose -o "${preset}.timeoutorig" ./maxhs_orig -verb=0 "${preset}_wcnf_xor_blasted_nox" > "${preset}.outorig"
         grep UNSAT "${preset}.outorig" || true
         orig=$(grep "^o " "${preset}.outorig")
@@ -55,13 +56,16 @@ totalnew=0
 ls network-reliability/*.cnf > mylist
 shuf mylist | head -n 1 > mylist2
 
-for f in `cat mylist2` ;do
-    for numxors in {0..2} ;do
-        f=$(basename "$f")
-        cp "network-reliability/$f" .
-        ./add_xors.py -f "$f" -o "$f-withxors" --xors $numxors
+for forig in `cat mylist2` ;do
+    echo "forig is: $forig"
+    for numxors in {0..50} ;do
+        f=$(basename "$forig")
+        echo "f is: $f xors is $numxors"
 
-        f="$f-withxors"
+        cp "network-reliability/$f" .
+        ./add_xors.py -f "$f" -o "$f-x${numxors}" --xors $numxors
+
+        f="$f-x${numxors}"
         preset="$f"
         rm -f "${preset}-orig"
         mv ${f} "${preset}-orig"
@@ -71,13 +75,18 @@ for f in `cat mylist2` ;do
 
         # strip xor for orig maxhs
         cat "${preset}_wcnf_xor_blasted" | ./strip_wcnf.py -x > "${preset}_wcnf_xor_blasted_nox"
+        rm -f "$f"
+        rm -f "${preset}-orig"
 
-        compare_the_two
+        #compare_the_two
 
-        rm "${preset}.outnew"
-        rm "${preset}.outorig"
-        rm "${preset}.timeoutorig"
-        rm "${preset}.timeoutnew"
+        rm -f "${preset}.outnew"
+        rm -f "${preset}.outorig"
+        rm -f "${preset}.timeoutorig"
+        rm -f "${preset}.timeoutnew"
+
+        mv "${preset}_wcnf_xor_blasted_nox" "problems/"
+        mv "${preset}_wcnf_xor_blasted" "problems/"
 
         if [ "$orig" == "$new" ]; then
             echo "OK: $orig -- $new"
