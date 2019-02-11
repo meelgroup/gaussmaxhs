@@ -1529,7 +1529,6 @@ bool MXFinder::fbeq() {
         if(!solver.addClause(x))
           return false;
     } else {
-        cout << "adding XOR in fbeq" << std::endl;
         if(!solver.addXorClause(x))
           return false;
     }
