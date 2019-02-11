@@ -614,8 +614,6 @@ Packed_vecs<Lit> Wcnf::reduce_by_units(Packed_vecs<Lit>& cls, miniSolver& sat_so
   size_t j = 0;
   vector<Lit> c;
   for(size_t i = 0; i < cls.size(); i++) {
-    //TODO CMS check!
-    cout << "COULD BE BUGGY HERE!!!" << std::endl;
     if (!cls[i].is_xor()) {
         c.clear();
         bool isSat {false};
@@ -640,7 +638,28 @@ Packed_vecs<Lit> Wcnf::reduce_by_units(Packed_vecs<Lit>& cls, miniSolver& sat_so
             soft_clswts[j++] = soft_clswts[i];
         }
     } else {
-        //nothing to do here actually
+        c.clear();
+        bool finalVal = true;
+        for(auto l : cls[i]) {
+            if(sat_solver.curVal(l) == l_Undef) {
+                c.push_back(l);
+            } else if(sat_solver.curVal(l) == l_True) {
+                finalVal ^= true;
+            } else if(sat_solver.curVal(l) == l_False) {
+            }
+        }
+
+        if (c.size() > 0) {
+            c[0]^=!finalVal;
+            if (c.size() > 1) {
+                tmp.addVec(c, true);
+            }
+        } else {
+            if (finalVal == false) {
+                cout << "c ERROR: Wcnf::reduce_by_units found empty hard clause\n";
+                exit(-1);
+            }
+        }
     }
   }
   if(softs) {
