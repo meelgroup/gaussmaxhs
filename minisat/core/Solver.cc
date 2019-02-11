@@ -225,11 +225,13 @@ bool    Solver::addXorClause_(      vec<Lit>& ps)
     ps.shrink(i - j);
 
     if (ps.size() != 0) {
-        cout << "-x-> adding final xcl:";
-        for(int i = 0; i < ps.size(); i++) {
-            cout << (sign(ps[i]) ? "-" : "") << var(ps[i]) << " ";
+        if (verbosity > 2) {
+            cout << "-x-> adding final xcl:";
+            for(int i = 0; i < ps.size(); i++) {
+                cout << (sign(ps[i]) ? "-" : "") << var(ps[i]) << " ";
+            }
+            cout << " rhs: " <<  rhs << std::endl;
         }
-        cout << " rhs: " <<  rhs << std::endl;
 
         if (ps.size() > 2) {
             xorclauses.push(Xor(ps, rhs));
