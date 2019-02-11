@@ -166,7 +166,6 @@ public:
     bool clean_xor_clauses(vec<Xor>& xors);
     bool clean_one_xor(Xor& x);
     bool fully_enqueue_this(const Lit lit);
-    vector<Gaussian*> gauss;
     void clear_gauss();
 
 protected:

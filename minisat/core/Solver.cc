@@ -1284,15 +1284,17 @@ void Solver::relocAll(ClauseAllocator& to)
         }
     clauses.shrink(i - j);
 
-    for (int x = 0; x < gauss.size(); x++) {
-        for (i = j = 0; i < gauss[x]->clauses_toclear.size(); i++) {
-            GaussClauseToClear& gcl = gauss[x]->clauses_toclear[i];
+    for (int x = 0; x < gauss_matrixes.size(); x++) {
+        for (i = j = 0; i < gauss_matrixes[x]->clauses_toclear.size(); i++) {
+            GaussClauseToClear& gcl = gauss_matrixes[x]->clauses_toclear[i];
             if (!isRemoved(gcl.offs)) {
+                uint32_t old_of = gcl.offs;
                 ca.reloc(gcl.offs, to);
-                gauss[x]->clauses_toclear[j++] = gauss[x]->clauses_toclear[i];
+                gauss_matrixes[x]->clauses_toclear[j++] = gauss_matrixes[x]->clauses_toclear[i];
+            } else {
             }
-            gauss[x]->clauses_toclear.resize(j);
         }
+        gauss_matrixes[x]->clauses_toclear.resize(j);
     }
 }
 

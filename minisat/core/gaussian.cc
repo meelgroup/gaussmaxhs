@@ -79,6 +79,7 @@ Gaussian::~Gaussian()
     for (uint32_t i = 0; i < clauses_toclear.size(); i++) {
         solver->ca.free(clauses_toclear[i].offs);
     }
+    clauses_toclear.clear();
 }
 
 inline void Gaussian::set_matrixset_to_cur()
@@ -943,7 +944,7 @@ Gaussian::gaussian_ret Gaussian::handle_matrix_prop(matrixset& m, const uint32_t
             assert(solver->value(tmp_clause[0]) == l_Undef);
             x.set_gauss_temp_cl();
 
-            clauses_toclear.push_back(GaussClauseToClear(offs, solver->trail.size()-1));
+            clauses_toclear.push_back(GaussClauseToClear(offs, solver->trail.size()));
             solver->enqueue(tmp_clause[0], CRef(offs));
             return propagation;
     }
@@ -955,7 +956,7 @@ void Gaussian::canceling(const uint32_t sublevel)
 {
     uint32_t rem = 0;
     for (int i = (int)clauses_toclear.size()-1
-        ; i >= 0 && clauses_toclear[i].sublevel >= sublevel
+        ; i >= 0 && clauses_toclear[i].sublevel > sublevel
         ; i--
     ) {
         solver->ca.free(clauses_toclear[i].offs);
@@ -1013,7 +1014,7 @@ gauss_ret Gaussian::find_truths()
     switch (g) {
         case conflict:
             useful_confl++;
-            clauses_toclear.push_back(GaussClauseToClear(confl, solver->trail.size()-1));
+            clauses_toclear.push_back(GaussClauseToClear(confl, solver->trail.size()));
             found_conflict = confl;
             return gauss_confl;
 
