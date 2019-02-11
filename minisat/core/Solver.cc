@@ -186,13 +186,6 @@ bool Solver::addClause_(vec<Lit>& ps)
 
 bool    Solver::addXorClause_(      vec<Lit>& ps)
 {
-    /*cout << "-x-> adding xcl orig ";
-    cout << "xcl:";
-    for(int i = 0; i < ps.size(); i++) {
-        cout << (sign(ps[i]) ? "-" : "") << var(ps[i]) << " ";
-    }
-    cout << std::endl;*/
-
     assert(ok);
     assert(decisionLevel() == 0);
 
