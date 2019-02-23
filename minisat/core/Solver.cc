@@ -881,6 +881,8 @@ lbool Solver::search(int nof_conflicts)
 
         }else{
             bool at_least_one_continue = false;
+            #ifndef ONLY_TOPLEVEL
+            exit(-1);
             for (Gaussian* g: gauss_matrixes) {
                 gauss_ret ret = g->find_truths();
                 switch (ret) {
@@ -915,6 +917,7 @@ lbool Solver::search(int nof_conflicts)
                         ;
                 }
             }
+            #endif
             if (at_least_one_continue) {
                 goto prop;
             }
@@ -943,10 +946,12 @@ lbool Solver::search(int nof_conflicts)
                     // Dummy decision level:
                     newDecisionLevel();
 
+                    #ifndef ONLY_TOPLEVEL
                     for (Gaussian* g: gauss_matrixes) {
                         gauss_ret ret = g->find_truths();
                         assert(ret == gauss_nothing);
                     }
+                    #endif
                 }else if (value(p) == l_False){
                     analyzeFinal(~p, conflict);
                     return l_False;
@@ -1284,6 +1289,7 @@ void Solver::relocAll(ClauseAllocator& to)
         }
     clauses.shrink(i - j);
 
+    #ifndef ONLY_TOPLEVEL
     for (int x = 0; x < gauss_matrixes.size(); x++) {
         for (i = j = 0; i < gauss_matrixes[x]->clauses_toclear.size(); i++) {
             GaussClauseToClear& gcl = gauss_matrixes[x]->clauses_toclear[i];
@@ -1296,6 +1302,7 @@ void Solver::relocAll(ClauseAllocator& to)
         }
         gauss_matrixes[x]->clauses_toclear.resize(j);
     }
+    #endif
 }
 
 
