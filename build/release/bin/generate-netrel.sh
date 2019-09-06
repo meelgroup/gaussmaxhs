@@ -58,7 +58,7 @@ shuf mylist | head -n 1 > mylist2
 
 for forig in `cat mylist2` ;do
     echo "forig is: $forig"
-    for numxors in {0..50} ;do
+    for numxors in {5000..5000}; do
         f=$(basename "$forig")
         echo "f is: $f xors is $numxors"
 
