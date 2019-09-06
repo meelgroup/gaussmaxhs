@@ -180,8 +180,9 @@ void miniSolver::freezeVar(Var v)
     //if(!frozen[in]) cout << "mini freezevar " << in << " external " << v << "\n";
     Minisat::SimpSolver::freezeVar(in);
   }
-  else 
-    cout << "c ERROR. Tried to freeze variable " << v << " that is not yet in solver\n.";
+  else  {
+    //cout << "c ERROR. Tried to freeze variable " << v << " that is not yet in solver\n.";
+  }
 }
 
 bool miniSolver::eliminate(bool turn_off_elim) 
