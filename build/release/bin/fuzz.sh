@@ -12,7 +12,7 @@ echo ./maxhs_orig in_wcnf_xor_blasted_nox
 
 # hard CNF solving
 cat in_wcnf_xor_blasted | ./strip_wcnf.py -s > in_cnf_xors_blasted
-echo ~/development/sat_solvers/cryptominisat/build/cryptominisat5 --maxmatrixrows 100000 in_cnf_xors_blasted
+cryptominisat5 --maxmatrixrows 100000 in_cnf_xors_blasted
 cat in_wcnf_xor_blasted | ./strip_wcnf.py -s -x > in_cnf_xor_blasted_nox
 
 echo "diff -y  in_cnf in_wcnf_xor  | colordiff | less -R"
