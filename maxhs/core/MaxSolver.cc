@@ -1220,7 +1220,7 @@ void MaxSolver::cplexAddNewClauses() {
   //TODO CMS: Note that since the limit is set and forced to 0, nothing will be added!
   //limit is "params.seed_max"
   //assert(cplexClauses.empty());
-  cout << "---- WARNING ---- NOTE: We added some clauses to CPlex.. not sure if this is OK" << endl;
+//   cout << "---- WARNING ---- NOTE: We added some clauses to CPlex.. not sure if this is OK" << endl;
   for(size_t i = 0; i < cplexClauses.size(); i++) {
     bool is_xor = false;
     vector<Lit> lits = cplexClauses.getVec(i, is_xor);
