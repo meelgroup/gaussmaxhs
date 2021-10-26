@@ -28,5 +28,9 @@ MacOS:
 ### Build
 make install
 
+## Generating Spin Glass and Network Reliability problems
+You will find `generate-netrel.sh` and `generate-spin.sh` problem generators under the default binary location `build/release/bin`. You can run these scripts to generate example [Spin Glass](https://cs.stanford.edu/~ermon/papers/rademacher-aaai2018.pdf) and [Network Reliability problems](https://www.comp.nus.edu.sg/~meel/Papers/AAAI17.pdf) for you.
+
+
 ## Fuzzing
-You can find various fuzzers for the GaussMaxHS system under `build/release/bin`, where the `make` command will build the binary. You can run `fuzz.sh` to fuzz the system against MaxHS without Gauss-Jordan elimination. While this fuzzing is incomplete, it should find most bugs.
+You can find various fuzzers for the GaussMaxHS system under `build/release/bin`, the default binary location. You can run `fuzz.sh` to fuzz the system against MaxHS without Gauss-Jordan elimination. While this fuzzing is incomplete, it should find most bugs.
