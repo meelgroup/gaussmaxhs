@@ -1,4 +1,4 @@
-# GaussMaxHS, an XOR supporting MaxSAT solver based on MaxHS
+# GaussMaxHS, a CNF+XOR MaxSAT solver based on MaxHS
 
 The code uses [MiniSat](https://github.com/niklasso/minisat) as the SAT solver, [CPLEX](https://community.ibm.com/community/user/datascience/blogs/xavier-nodet1/2020/07/09/cplex-free-for-students?mhsrc=ibmsearch_a&mhq=cplex) from IBM as the MIPS solver, [MaxHS](https://github.com/fbacchus/MaxHS) for MaxSAT solving, and a version of Gauss-Jordan elimination to perform CDCL(T). For our paper PDF, see [here](https://proceedings.kr.org/2021/55/kr2021-0055-soos-et-al.pdf).
 
