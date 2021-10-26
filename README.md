@@ -14,15 +14,10 @@ You apply for their academic initiative program and then then you
 can download CPLEX and other IBM software.
 
 ### Configure
-Use "make config VAR=defn" or edit config.mk directly. Required variable settings:
+Use `make config VAR=defn` or edit config.mk directly. Required variable settings:
 
-Linux:
-`LINUX_CPLEXLIBDIR=<path to CPLEX library>` the directory on your linux system that contains libcplex.a and libilocplex.a (the makefile does a static build)
-`LINUX_CPLEXINCDIR=<path to CPLEX headers>`
-
-MacOS:
-`DARWIN_CPLEXLIBDIR=<path to CPLEX library>` the directory on your MAC system that contains libcplex.a and libilocplex.a (the makefile does a static build)
-`DARWIN_CPLEXINCDIR=<path to CPLEX headers>`
+- Linux: `LINUX_CPLEXLIBDIR=<path to CPLEX library>` the directory on your linux system that contains libcplex.a and libilocplex.a (the makefile does a static build). `LINUX_CPLEXINCDIR=<path to CPLEX headers>`
+- MacOS: `DARWIN_CPLEXLIBDIR=<path to CPLEX library>` the directory on your MAC system that contains libcplex.a and libilocplex.a (the makefile does a static build), `DARWIN_CPLEXINCDIR=<path to CPLEX headers>`
 
   
 ### Build
