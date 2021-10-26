@@ -30,6 +30,8 @@ make install
 ## Generating Spin Glass and Network Reliability problems
 You will find `generate-netrel.sh` and `generate-spin.sh` problem generators under the default binary location `build/release/bin`. You can run these scripts to generate example [Spin Glass](https://cs.stanford.edu/~ermon/papers/rademacher-aaai2018.pdf) and [Network Reliability problems](https://www.comp.nus.edu.sg/~meel/Papers/AAAI17.pdf) for you.
 
+To run the `generate-netrel.sh` script, you will need to extract the files from `build/release/bin/network-reliability/net-rel.tar.gz` first. The files should all be extracted under `build/release/bin/network-reliability/`, e.g. one file should be `build/release/bin/network-reliability/Net27_90_22_count_118.cnf`.
+
 
 ## Fuzzing
-You can find various fuzzers for the GaussMaxHS system under `build/release/bin`, the default binary location. You can run `fuzz.sh` to fuzz the system against MaxHS without Gauss-Jordan elimination. While this fuzzing is incomplete, it should find most bugs.
+You can find various fuzzers for the GaussMaxHS system under `build/release/bin`, the default binary location. You can run `fuzz.sh` to fuzz the system against MaxHS without Gauss-Jordan elimination. While this fuzzing is incomplete, it should find most bugs. You will need [CryptoMiniSat5](github.com/msoos/cryptominisat) installed, as the script uses CryptoMiniSat to check for errors with GJE.
