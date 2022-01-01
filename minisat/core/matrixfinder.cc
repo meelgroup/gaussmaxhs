@@ -104,11 +104,11 @@ bool MatrixFinder::findMatrixes()
     double myTime = cpuTime();
 
     //cout << "solver->xorclauses.size(): " << solver->xorclauses.size() << endl;
-    if (solver->xorclauses.size() < solver->gaussconf.min_gauss_xor_clauses
+    /*if (solver->xorclauses.size() < solver->gaussconf.min_gauss_xor_clauses
         || solver->gaussconf.decision_until <= 0
     ) {
         return true;
-    }
+    }*/
 
     bool ret = solver->clean_xor_clauses(solver->xorclauses);
     if (!ret)
@@ -246,7 +246,7 @@ uint32_t MatrixFinder::setMatrixes()
         }
 
         //cout << "small check" << endl;
-        if (m.rows < solver->gaussconf.min_matrix_rows
+        /*if (m.rows < solver->gaussconf.min_matrix_rows
             || m.rows > solver->gaussconf.max_matrix_rows
         ) {
             if (m.rows > solver->gaussconf.max_matrix_rows
@@ -255,7 +255,7 @@ uint32_t MatrixFinder::setMatrixes()
                 cout << "c [matrix] Too many rows in matrix: " << m.rows << endl;
             }
             continue;
-        }
+        }*/
 
         //TODO CMS later
         double ratio_indep = 0;
@@ -287,16 +287,16 @@ uint32_t MatrixFinder::setMatrixes()
         }*/
 
 
-        bool use_matrix = false;
+        bool use_matrix = true;
         /*if (solver->independent_vars) {
             if (ratio_indep > 1.0) { //TODO Magic constant
                 use_matrix = true;
             }
         }*/
 
-        if (realMatrixNum <= solver->gaussconf.max_num_matrixes) {
-            use_matrix = true;
-        }
+//         if (realMatrixNum <= solver->gaussconf.max_num_matrixes) {
+//             use_matrix = true;
+//         }
 
         if (use_matrix) {
             if (solver->verbosity) {
