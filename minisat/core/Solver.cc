@@ -882,7 +882,6 @@ lbool Solver::search(int nof_conflicts)
         }else{
             bool at_least_one_continue = false;
             #ifndef ONLY_TOPLEVEL
-            exit(-1);
             for (Gaussian* g: gauss_matrixes) {
                 gauss_ret ret = g->find_truths();
                 switch (ret) {
@@ -1081,6 +1080,7 @@ lbool Solver::solve_()
     }
 
     int curr_restarts = 0;
+    cout << " into while here " << std::endl;
     while (status == l_Undef){
         //cout << "claueses.size:" << clauses.size() << std::endl;
         clear_gauss();

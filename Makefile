@@ -39,9 +39,9 @@ BUILD_DIR      ?= build
 MAXHS_RELSYM ?= -g
 
 # Sets of compile flags for different build types
-MAXHS_REL    ?= -O3 -DONLY_TOPLEVEL
+MAXHS_REL    ?= -O3
 MAXHS_DEB    ?= -O0 -D_GLIBCXX_DEBUG -ggdb
-MAXHS_PRF    ?= -O3 -DONLY_TOPLEVEL
+MAXHS_PRF    ?= -O3
 
 # GNU Standard Install Prefix
 prefix         ?= /usr/local
@@ -81,7 +81,7 @@ MAXHS_SLIB = lib$(MAXHS).a#  Name of Maxhs static library.
 MAXHS_CXXFLAGS = -DIL_STD -I. -I$(CPLEXINCDIR)
 MAXHS_CXXFLAGS += -D __STDC_LIMIT_MACROS -D __STDC_FORMAT_MACROS 
 MAXHS_CXXFLAGS += -Wall -Wno-parentheses -Wextra -Wno-deprecated -Wno-sign-compare
-MAXHS_CXXFLAGS += -std=c++11 -DONLY_TOPLEVEL
+MAXHS_CXXFLAGS += -std=c++11
 
 MAXHS_LDFLAGS  = -Wall -lz -L$(CPLEXLIBDIR) -lcplex -lpthread -ldl
 

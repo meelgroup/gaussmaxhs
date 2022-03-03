@@ -203,7 +203,7 @@ inline void Packed_vecs<T>::addVec(const vector<T> &v, bool is_xor)
 {
   offsets.push_back(allVecs.size());
   sizes.push_back(sz_and_xor(v.size(),is_xor));
-  if (is_xor) cout << "xor added to vec:" << v << std::endl;
+  //if (is_xor) cout << "xor added to vec:" << v << std::endl;
   for(size_t i = 0; i < v.size(); i++)
     allVecs.push_back(v[i]);
 }

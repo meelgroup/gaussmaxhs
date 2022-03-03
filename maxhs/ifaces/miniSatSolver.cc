@@ -87,9 +87,12 @@ lbool miniSolver::solve_(const vector<Lit>& assumps, vector<Lit>& conflict,
   else
     propagation_budget = propagations + propBudget;
 
+  cout << " HGERERERE" << std::endl;
   lbool val = Minisat::SimpSolver::solve_(false); //don't do simplification incrementally. 
   in2ex(Minisat::SimpSolver::conflict.toVec(), conflict);
   Minisat::Solver::printStats();
+  cout << "VAL: " << val << std::endl;
+  cout << " model : " << model[0] << " , " << model[1] << " , " << model[2] << std::endl;
   return val;
 }
 
