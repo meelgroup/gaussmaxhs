@@ -34,14 +34,22 @@ The system expects a CNF-XOR input, which is the same as the [WDIMACS](http://ww
 For example, let's take the following input file:
 
 ```
-p wcnf 4 3 10
+p wcnf 4 6 10
+5 1 2 -3 0
 5 1 -2 3 0
-x 10 1 2 0
+5 -1 2 3 0
+5 -1 -2 -3 0
+x 10 1 2 3 0
 x 10 -1 3 4 0
 ```
 
-This file contains four variables and thee constraints, and promises to give weights with a hard constraint having a weight of 10 (hence the header `p wcnf 4 3 10`). The first constraint says that `v1 or not v2 or v3 = true` and has a weight of 5, i.e. it's a soft constraints. The second says that `v1 XOR x2 = true` and the third says `v1 XOR v3 XOR v4 = false`, both of which have a weight of 10, and are hard constraints.
-
+This file contains four variables and six constraints, and promises to give
+weights with a hard constraint having a weight of 10 (hence the header `p wcnf
+4 6 10`). The first four constraints say that `v1 or v2 or NOT v3 = true`,
+`v1 or NOT v2 or v3 = true`, etc. all being soft constraint with a
+weight of 5. The last two lines say that `v1 XOR x2 = true` and
+`v1 XOR v3 XOR v4 = false`, both of which have a
+weight of 10, and are hard constraints.
 
 When you run the tool on the problem above, you get the following output:
 
@@ -51,7 +59,14 @@ cd gaussmaxhs
 make
 cd build/bin/release
 ./maxhs input.wcnf
+[...]
+o 5
+s OPTIMUM FOUND
+v -1 -2 3 4
+[...]
 ```
+
+This indicates that the lowest cost has been found, and it's the solution `v1=false, v2=false, v3=true, v4=true`. The cost of this solution is 5, because one of the soft constraints had to be violated, as together they clash with the first XOR constraint.
 
 
 ## Generating Spin Glass and Network Reliability problems
