@@ -1080,7 +1080,6 @@ lbool Solver::solve_()
     }
 
     int curr_restarts = 0;
-    cout << " into while here " << std::endl;
     while (status == l_Undef){
         //cout << "claueses.size:" << clauses.size() << std::endl;
         clear_gauss();

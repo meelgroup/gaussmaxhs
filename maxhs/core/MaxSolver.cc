@@ -1829,7 +1829,6 @@ void MaxSolver::addHards(SatSolver* slv) {
           return;
         }
     } else {
-        cout << "Adding hard XOR" << endl;
         if (!slv->addXorClause(x)) {
           cout << "c Adding hard XOR clauses caused unsat.\n";
           return;
