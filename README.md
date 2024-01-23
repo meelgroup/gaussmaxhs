@@ -29,16 +29,29 @@ make install
 
 ## How to Run
 
-The system expects a CNF-XOR input, which is the same as the [WDIMACS](http://www.maxhs.org/docs/wdimacs.html) format with the extension that you can add XOR constraints just like with [CryptoMiniSat](https://github.com/msoos/cryptominisat), and the weight must be provided after the 'x'. For example, let's take the following input file:
+The system expects a CNF-XOR input, which is the same as the [WDIMACS](http://www.maxhs.org/docs/wdimacs.html) format with the extension that you can add XOR constraints just like with [CryptoMiniSat](https://github.com/msoos/cryptominisat), and the weight must be provided after the 'x'. Note that all XOR constraints must be hard constraints. Furthermore, XOR constraints must be at least 3-long, as 2-long XORs are trivial to write in CNF as two binary constraints.
+
+For example, let's take the following input file:
 
 ```
 p wcnf 4 3 10
-10 1 -2 3 0
-x 5 1 2 0
-x 5 -1 3 4 0
+5 1 -2 3 0
+x 10 1 2 0
+x 10 -1 3 4 0
 ```
 
-This file contains four variables and thee constraints, and promises to give weights with a hard constraint having a weight of 10 (hence the header `p wcnf 4 3 10`). The first constraint says that `v1 or not v2 or v3 = true` and has a weight of 10, i.e. it's a hard constraints. The second says that `v1 XOR x2 = true` and the third says `v1 XOR v3 XOR v4 = false`, both of which have a weight of 5, and are soft constraints.
+This file contains four variables and thee constraints, and promises to give weights with a hard constraint having a weight of 10 (hence the header `p wcnf 4 3 10`). The first constraint says that `v1 or not v2 or v3 = true` and has a weight of 5, i.e. it's a soft constraints. The second says that `v1 XOR x2 = true` and the third says `v1 XOR v3 XOR v4 = false`, both of which have a weight of 10, and are hard constraints.
+
+
+When you run the tool on the problem above, you get the following output:
+
+```
+git clone https://github.com/meelgroup/gaussmaxhs
+cd gaussmaxhs
+make
+cd build/bin/release
+./maxhs input.wcnf
+```
 
 
 ## Generating Spin Glass and Network Reliability problems
@@ -48,4 +61,4 @@ To run the `generate-netrel.sh` script, you will need to extract the files from 
 
 
 ## Fuzzing
-You can find various fuzzers for the GaussMaxHS system under `build/release/bin`, the default binary location. You can run `fuzz.sh` to fuzz the system against MaxHS without Gauss-Jordan elimination. While this fuzzing is incomplete, it should find most bugs. You will need [CryptoMiniSat5](https;//www.github.com/msoos/cryptominisat) installed, as the script uses CryptoMiniSat to check for errors with GJE.
+You can find various fuzzers for the GaussMaxHS system under `build/release/bin`, the default binary location. You can run `fuzz.sh` to fuzz the system against MaxHS without Gauss-Jordan elimination. While this fuzzing is incomplete, it should find most bugs. You will need [CryptoMiniSat5](https;//github.com/msoos/cryptominisat) installed, as the script uses CryptoMiniSat to check for errors with GJE.
